@@ -8,21 +8,25 @@
 #'            Last column is assumed to be response.
 #' @param k Integer; Number of points to select.
 #' @param intercept Logical; whether first column is intercept.
+#' @param header Logical; whether the csv files contains a header row.
 #'
+#' @useDynLib SUBLIME, .registration = TRUE
+#' @importFrom Rcpp evalCpp
 #'
 #' @return A list with:
 #' \itemize{
 #'   \item X_selected: Numeric matrix of subset data
 #'   \item y_selected: Numeric vector of subset response
 #' }
+#'
 #' @export
+#'
 #'
 #' @examples
 #'
 #' set.seed (42)
 #' X <- matrix(rnorm(200), ncol = 4)
 #' y <- rnorm(50)
-#'
 #' res <- IBOSS(X = X, y = y, k = 20)
 #' str(res)
 #'
@@ -48,6 +52,6 @@ IBOSS <- function(X = NULL, y = NULL, csv = NULL, k, intercept = FALSE, header =
   if (nrow(X) != length(y)) stop("X and y must have same number of rows.")
   if (!is.numeric(X) || !is.numeric(y)) stop("X and y must be numeric.")
 
-  res <- k_selection_cpp(X, y, as.integer(k), intercept)
+  res <- suppressWarnings(k_selection_cpp(X, y, as.integer(k), intercept))
   return(res)
 }

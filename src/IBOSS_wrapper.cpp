@@ -1,8 +1,7 @@
+// [[Rcpp::depends(RcppEigen)]]
+
 #include <RcppEigen.h>
 #include "iboss.hpp"
-
-// [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::plugins(openmp)]]
 
 // [[Rcpp::export]]
 Rcpp::List k_selection_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y, int k, bool intercept = false) {

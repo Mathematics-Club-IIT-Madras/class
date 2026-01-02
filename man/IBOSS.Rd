@@ -17,6 +17,8 @@ Last column is assumed to be response.}
 \item{k}{Integer; Number of points to select.}
 
 \item{intercept}{Logical; whether first column is intercept.}
+
+\item{header}{Logical; whether the csv files contains a header row}
 }
 \value{
 A list with:
@@ -33,7 +35,6 @@ Runs the IBOSS algorithm on given dataset.
 set.seed (42)
 X <- matrix(rnorm(200), ncol = 4)
 y <- rnorm(50)
-
 res <- IBOSS(X = X, y = y, k = 20)
 str(res)
 

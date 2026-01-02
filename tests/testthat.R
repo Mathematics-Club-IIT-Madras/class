@@ -10,4 +10,3 @@ library(testthat)
 library(SUBLIME)
 
 test_check("SUBLIME")
-

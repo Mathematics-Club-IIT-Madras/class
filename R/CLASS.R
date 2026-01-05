@@ -77,8 +77,7 @@ CLASS <- function(X = NULL, y = NULL, csv = NULL, header = FALSE, nSample = -1, 
 
   intercept_col <- rep(x = 1, times = nrow(X_final))
   X_ols <- cbind(intercept_col, X_final)
-  ols_fit <- lm.fit(X_ols, y_final)
-  beta_hat <- ols_fit$coefficients
+  beta_hat <- betaOLS_closed(X_ols, y_final)
 
   intercept_hat <- beta_hat[1]
   beta_reduced  <- beta_hat[-1]

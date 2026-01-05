@@ -13,6 +13,18 @@ kBOSS <- function(X, y, freqs, k_iboss) {
     .Call(`_class_kBOSS`, X, y, freqs, k_iboss)
 }
 
+r2 <- function(y_true, y_pred) {
+    .Call(`_class_r2`, y_true, y_pred)
+}
+
+MSE <- function(y_true, y_pred) {
+    .Call(`_class_MSE`, y_true, y_pred)
+}
+
+betaOLS_closed <- function(X, y) {
+    .Call(`_class_betaOLS_closed`, X, y)
+}
+
 fast_subsample <- function(X, y, nSample) {
     .Call(`_class_fast_subsample`, X, y, nSample)
 }

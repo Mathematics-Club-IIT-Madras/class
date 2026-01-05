@@ -17,7 +17,7 @@ Rcpp::List fast_subsample(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map
     std::vector<int> idxs(N);
     std::iota(idxs.begin(), idxs.end(), 0);
 
-    std::mt19937 rng(42);
+    static std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> dist(0, N - 1);
     for (int i = 0; i < nSample; ++i) std::swap(idxs[i], idxs[dist(rng)]);
 

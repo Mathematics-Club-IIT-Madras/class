@@ -2,10 +2,30 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 k_selection_cpp <- function(X, y, k, intercept = FALSE) {
-    .Call(`_SUBLIME_k_selection_cpp`, X, y, k, intercept)
+    .Call(`_class_k_selection_cpp`, X, y, k, intercept)
 }
 
 SRHT_cpp <- function(X, y, r) {
-    .Call(`_SUBLIME_SRHT_cpp`, X, y, r)
+    .Call(`_class_SRHT_cpp`, X, y, r)
+}
+
+kBOSS <- function(X, y, freqs, k_iboss) {
+    .Call(`_class_kBOSS`, X, y, freqs, k_iboss)
+}
+
+r2 <- function(y_true, y_pred) {
+    .Call(`_class_r2`, y_true, y_pred)
+}
+
+MSE <- function(y_true, y_pred) {
+    .Call(`_class_MSE`, y_true, y_pred)
+}
+
+betaOLS_closed <- function(X, y) {
+    .Call(`_class_betaOLS_closed`, X, y)
+}
+
+fast_subsample <- function(X, y, nSample) {
+    .Call(`_class_fast_subsample`, X, y, nSample)
 }
 

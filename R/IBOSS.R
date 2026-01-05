@@ -10,7 +10,7 @@
 #' @param intercept Logical; whether first column is intercept.
 #' @param header Logical; whether the csv files contains a header row.
 #'
-#' @useDynLib SUBLIME, .registration = TRUE
+#' @useDynLib class, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 #' @return A list with:

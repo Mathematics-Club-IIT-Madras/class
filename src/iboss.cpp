@@ -1,4 +1,3 @@
-#pragma once
 #include <Eigen/Dense>
 #include <vector>
 #include <algorithm>
@@ -6,8 +5,7 @@
 #include <omp.h>
 
 inline std::pair<Eigen::MatrixXd, Eigen::VectorXd> iboss_cpp(const Eigen::MatrixXd &X, const Eigen::VectorXd &y, int k, bool intercept) {
-    Eigen::setNbThreads(1);
-
+    
     const Eigen::Index p = X.cols();
     const Eigen::Index N = X.rows();
 

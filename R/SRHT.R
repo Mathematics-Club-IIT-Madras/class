@@ -21,7 +21,7 @@
 #'
 #' @return The result list returned by the underlying C++ \code{SRHT_cpp} function.
 #'
-#' @useDynLib SUBLIME, .registration = TRUE
+#' @useDynLib class, .registration = TRUE
 #' @import Rcpp
 #' @importFrom data.table fread
 #' @export

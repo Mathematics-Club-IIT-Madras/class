@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(SUBLIME)
+library(class)
 
-test_check("SUBLIME")
+test_check("class")

@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // k_selection_cpp
 Rcpp::List k_selection_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y, int k, bool intercept);
-RcppExport SEXP _SUBLIME_k_selection_cpp(SEXP XSEXP, SEXP ySEXP, SEXP kSEXP, SEXP interceptSEXP) {
+RcppExport SEXP _class_k_selection_cpp(SEXP XSEXP, SEXP ySEXP, SEXP kSEXP, SEXP interceptSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,7 +27,7 @@ END_RCPP
 }
 // SRHT_cpp
 Rcpp::List SRHT_cpp(Eigen::MatrixXd X, Eigen::VectorXd y, int r);
-RcppExport SEXP _SUBLIME_SRHT_cpp(SEXP XSEXP, SEXP ySEXP, SEXP rSEXP) {
+RcppExport SEXP _class_SRHT_cpp(SEXP XSEXP, SEXP ySEXP, SEXP rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -38,14 +38,82 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// kBOSS
+Rcpp::List kBOSS(Eigen::MatrixXd& X, Eigen::VectorXd& y, Rcpp::NumericVector freqs, int k_iboss);
+RcppExport SEXP _class_kBOSS(SEXP XSEXP, SEXP ySEXP, SEXP freqsSEXP, SEXP k_ibossSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type freqs(freqsSEXP);
+    Rcpp::traits::input_parameter< int >::type k_iboss(k_ibossSEXP);
+    rcpp_result_gen = Rcpp::wrap(kBOSS(X, y, freqs, k_iboss));
+    return rcpp_result_gen;
+END_RCPP
+}
+// r2
+double r2(const Eigen::VectorXd& y_true, const Eigen::VectorXd& y_pred);
+RcppExport SEXP _class_r2(SEXP y_trueSEXP, SEXP y_predSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y_true(y_trueSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y_pred(y_predSEXP);
+    rcpp_result_gen = Rcpp::wrap(r2(y_true, y_pred));
+    return rcpp_result_gen;
+END_RCPP
+}
+// MSE
+double MSE(const Eigen::VectorXd& y_true, const Eigen::VectorXd& y_pred);
+RcppExport SEXP _class_MSE(SEXP y_trueSEXP, SEXP y_predSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y_true(y_trueSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y_pred(y_predSEXP);
+    rcpp_result_gen = Rcpp::wrap(MSE(y_true, y_pred));
+    return rcpp_result_gen;
+END_RCPP
+}
+// betaOLS_closed
+Rcpp::NumericVector betaOLS_closed(const Eigen::MatrixXd& X, const Eigen::VectorXd& y);
+RcppExport SEXP _class_betaOLS_closed(SEXP XSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(betaOLS_closed(X, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// fast_subsample
+Rcpp::List fast_subsample(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map<Eigen::VectorXd>& y, int nSample);
+RcppExport SEXP _class_fast_subsample(SEXP XSEXP, SEXP ySEXP, SEXP nSampleSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type nSample(nSampleSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_subsample(X, y, nSample));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_SUBLIME_k_selection_cpp", (DL_FUNC) &_SUBLIME_k_selection_cpp, 4},
-    {"_SUBLIME_SRHT_cpp", (DL_FUNC) &_SUBLIME_SRHT_cpp, 3},
+    {"_class_k_selection_cpp", (DL_FUNC) &_class_k_selection_cpp, 4},
+    {"_class_SRHT_cpp", (DL_FUNC) &_class_SRHT_cpp, 3},
+    {"_class_kBOSS", (DL_FUNC) &_class_kBOSS, 4},
+    {"_class_r2", (DL_FUNC) &_class_r2, 2},
+    {"_class_MSE", (DL_FUNC) &_class_MSE, 2},
+    {"_class_betaOLS_closed", (DL_FUNC) &_class_betaOLS_closed, 2},
+    {"_class_fast_subsample", (DL_FUNC) &_class_fast_subsample, 3},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_SUBLIME(DllInfo *dll) {
+RcppExport void R_init_class(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

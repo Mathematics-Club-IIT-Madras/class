@@ -1,15 +1,15 @@
-#ifndef FeatureSRHT_HPP
-#define FeatureSRHT_HPP
+#pragma once
 
-#include <RcppEigen.h>
+#include <Eigen/Dense>
 #include <vector>
 #include <cmath>
 #include <algorithm>
 #include <random>
 #include <numeric>
+#include <utility>
+#include <string>
 
 // --- Structs ---
-
 struct OLSResult {
     double r2;
     Eigen::VectorXd coeffs;
@@ -17,23 +17,27 @@ struct OLSResult {
 
 struct BenchmarkResult {
     std::string method;
-    double r2;
+    double train_r2;
+    double test_r2;
+    double test_mse;
     Eigen::VectorXd coeffs;
     std::vector<int> indices;
     int total_features;
+    bool executed;
 };
 
-// --- Helper Function Declarations ---
-
+// --- Helper Declarations ---
 void fwht_iterative(double* a, int n);
-void scaleData(Eigen::MatrixXd& X);
+double compute_scale(const Eigen::MatrixXd& X);
+Eigen::MatrixXd apply_rotation(Eigen::MatrixXd X, double scale, int seed);
 int nextPowerOfTwo(int n);
 std::vector<int> bin_continuous_targets(const Eigen::VectorXd& y, int n_bins);
 OLSResult solve_ols(const Eigen::MatrixXd& X, const Eigen::VectorXd& y);
+std::pair<double, double> predict_ols(const Eigen::MatrixXd& X_test, const Eigen::VectorXd& y_test, 
+                                      const Eigen::VectorXd& beta, const std::vector<int>& indices);
 
-// --- ISRHT Core Class Declaration ---
-
-class ISRHT_Core {
+// --- Core Class ---
+class FeatureSRHT_Core {
 public:
     static Eigen::MatrixXd rotateData(Eigen::MatrixXd X, int seed);
 
@@ -49,5 +53,3 @@ public:
     static std::pair<Eigen::MatrixXd, std::vector<int>> fit_transform_supervised(
         const Eigen::MatrixXd& X_rot, const std::vector<int>& labels, int r, double a_param);
 };
-
-#endif // FeatureSRHT_HPP

@@ -1,270 +1,133 @@
 #include "FeatureSRHT.hpp"
-#include <omp.h>
+#include <cmath>
+#include <algorithm>
+#include <numeric>
 #include <iostream>
+#include <vector>
+#include <map>
+#include <omp.h>
 
 using namespace Eigen;
 
-// --- Helper Implementations ---
+// --- HELPER: NEXT POWER OF 2 ---
+int next_pow2(int n) { int p = 1; while (p < n) p <<= 1; return p; }
 
-void fwht_iterative(double* a, int n) {
-    for (int len = 1; len < n; len <<= 1) {
-        for (int i = 0; i < n; i += 2 * len) {
-            for (int j = 0; j < len; j++) {
-                double u = a[i + j];
-                double v = a[i + len + j];
-                a[i + j] = u + v;
-                a[i + len + j] = u - v;
-            }
+// --- IN-PLACE FWHT (Raw Pointer) ---
+void fwht_1d_raw(double* a, int n) {
+    int h = 1;
+    while (h < n) {
+        for (int i = 0; i < n; i += h * 2) {
+            for (int j = i; j < i + h; ++j) {
+                double x = a[j]; double y = a[j + h];
+                a[j] = x + y; a[j + h] = x - y;
+            }} h *= 2; }}
+
+double compute_scale(const MatrixXd& X) { return 1.0 / std::sqrt(X.rows()); }
+
+// --- ZERO-ALLOCATION ROTATION ---
+MatrixXd apply_rotation(const MatrixXd& X, double scale, int seed) {
+    int n = X.rows(); int d = X.cols(); int d_pad = next_pow2(d);
+    MatrixXd X_rot(n, d_pad); X_rot.setZero();
+    std::mt19937 master_rng(seed); std::uniform_int_distribution<int> sign_dist(0, 1);
+    VectorXd signs(d); for(int i=0; i<d; ++i) signs[i] = (sign_dist(master_rng) == 0) ? 1.0 : -1.0;
+    #pragma omp parallel
+    {
+        std::vector<double> buffer(d_pad);
+        #pragma omp for schedule(static)
+        for(int i=0; i<n; ++i) {
+            for(int j=0; j<d; ++j) buffer[j] = X(i, j) * signs[j];
+            for(int j=d; j<d_pad; ++j) buffer[j] = 0.0;
+            fwht_1d_raw(buffer.data(), d_pad);
+            for(int j=0; j<d_pad; ++j) X_rot(i, j) = buffer[j] * scale;
         }
     }
+    return X_rot;
 }
 
-double compute_scale(const Eigen::MatrixXd& X) {
-    double max_val = 0.0;
-    int n = X.rows();
-    int d = X.cols();
-
-    #pragma omp parallel for reduction(max:max_val)
-    for(int i=0; i<n; ++i) {
-        for(int j=0; j<d; ++j) {
-            double abs_v = std::abs(X(i,j));
-            if(std::isfinite(abs_v) && abs_v > max_val) max_val = abs_v;
-        }
-    }
-    return (max_val > 1e-9) ? (1.0 / max_val) : 1.0;
-}
-
-Eigen::MatrixXd apply_rotation(Eigen::MatrixXd X, double scale, int seed) {
-    X *= scale;
-    int n = X.rows();
-    int d = X.cols();
-    int padded_d = nextPowerOfTwo(d);
-
-    std::mt19937 rng(seed);
-    std::uniform_int_distribution<> dist(0, 1);
-    std::vector<double> signs(padded_d);
-    for(int j=0; j<padded_d; ++j) {
-        signs[j] = (dist(rng) == 0) ? 1.0 : -1.0;
-    }
-
-    using MatrixRowMaj = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-    MatrixRowMaj X_rotated = MatrixRowMaj::Zero(n, padded_d);
-    X_rotated.block(0, 0, n, d) = X;
-
-    double transform_scale = 1.0 / std::sqrt((double)padded_d);
-
-    #pragma omp parallel for schedule(static)
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < d; j++) X_rotated(i, j) *= signs[j];
-        fwht_iterative(X_rotated.row(i).data(), padded_d);
-    }
-    
-    X_rotated *= transform_scale;
-    return X_rotated; 
-}
-
-int nextPowerOfTwo(int n) {
-    if ((n > 0) && ((n & (n - 1)) == 0)) return n;
-    return std::pow(2, std::ceil(std::log2(n)));
-}
-
-std::vector<int> bin_continuous_targets(const Eigen::VectorXd& y, int n_bins) {
-    int n = y.size();
+// --- QUANTILE BINNING ---
+std::vector<int> bin_continuous_targets_quantile(const VectorXd& y, int bins) {
+    int n = y.size(); if(bins < 2) return std::vector<int>(n, 0);
+    std::vector<std::pair<double, int>> y_sorted(n);
+    for(int i=0; i<n; ++i) y_sorted[i] = {y[i], i};
+    std::sort(y_sorted.begin(), y_sorted.end());
     std::vector<int> labels(n);
-    double min_y = y.minCoeff();
-    double max_y = y.maxCoeff();
-    double range = max_y - min_y;
-    if (range < 1e-9 || !std::isfinite(range)) return std::vector<int>(n, 0);
-    
-    for(int i = 0; i < n; i++) {
-        if (!std::isfinite(y[i])) { labels[i] = 0; continue; }
-        int bin = (int)((y[i] - min_y) / range * n_bins);
-        if (bin >= n_bins) bin = n_bins - 1;
-        labels[i] = bin;
+    int chunk_size = n / bins; int remainder = n % bins; int current_idx = 0;
+    for(int b=0; b<bins; ++b) {
+        int size = chunk_size + (b < remainder ? 1 : 0);
+        for(int k=0; k<size; ++k) { labels[y_sorted[current_idx].second] = b; current_idx++; }
     }
     return labels;
 }
 
-OLSResult solve_ols(const Eigen::MatrixXd& X, const Eigen::VectorXd& y) {
-    int n = X.rows();
-    int k = X.cols();
-    if (n == 0 || k == 0) return {0.0, Eigen::VectorXd::Zero(k+1)};
-
-    Eigen::MatrixXd X_bias(n, k + 1);
-    X_bias.col(0) = Eigen::VectorXd::Ones(n); 
-    X_bias.block(0, 1, n, k) = X;
-    
-    Eigen::VectorXd w = X_bias.colPivHouseholderQr().solve(y);
-    
-    if (!w.allFinite()) return {0.0, Eigen::VectorXd::Zero(k+1)};
-
-    Eigen::VectorXd y_pred = X_bias * w;
-    double y_mean = y.mean();
-    double ss_tot = (y.array() - y_mean).square().sum();
-    double ss_res = (y.array() - y_pred.array()).square().sum();
-    
-    if (ss_tot < 1e-9) return {0.0, w};
-    double r2 = 1.0 - (ss_res / ss_tot);
-    
-    return {r2, w};
+OLSResult solve_ols(const MatrixXd& X, const VectorXd& y) {
+    MatrixXd XtX = X.transpose() * X; VectorXd Xty = X.transpose() * y;
+    XtX.diagonal().array() += 1e-6; VectorXd coeffs = XtX.ldlt().solve(Xty);
+    VectorXd preds = X * coeffs;
+    double ss_tot = (y.array() - y.mean()).square().sum();
+    double ss_res = (y - preds).squaredNorm();
+    double r2 = (ss_tot > 1e-9) ? (1.0 - (ss_res / ss_tot)) : 0.0;
+    return {r2, coeffs};
 }
 
-std::pair<double, double> predict_ols(const Eigen::MatrixXd& X_test, const Eigen::VectorXd& y_test, 
-                                      const Eigen::VectorXd& beta, const std::vector<int>& indices) {
-    if (X_test.rows() == 0) return {NA_REAL, NA_REAL}; 
-
-    int n = X_test.rows();
-    int r = indices.size();
-    
-    Eigen::MatrixXd X_subset(n, r);
-    for(int j=0; j<r; ++j) {
-        X_subset.col(j) = X_test.col(indices[j]);
-    }
-
-    Eigen::MatrixXd X_bias(n, r + 1);
-    X_bias.col(0) = Eigen::VectorXd::Ones(n);
-    X_bias.block(0, 1, n, r) = X_subset;
-
-    Eigen::VectorXd y_pred = X_bias * beta;
-    Eigen::VectorXd resid = y_test - y_pred;
-    double mse = resid.array().square().mean();
-    
-    double y_mean = y_test.mean();
-    double ss_tot = (y_test.array() - y_mean).square().sum();
-    double ss_res = resid.array().square().sum();
-    double r2 = (ss_tot > 1e-9) ? (1.0 - ss_res/ss_tot) : 0.0;
-
-    return {r2, mse};
-}
-
-// --- Class Implementation ---
-
-Eigen::MatrixXd FeatureSRHT_Core::rotateData(Eigen::MatrixXd X, int seed) {
-    double s = compute_scale(X);
-    return apply_rotation(X, s, seed);
-}
-
-std::pair<Eigen::MatrixXd, std::vector<int>> FeatureSRHT_Core::fit_transform_uniform(const Eigen::MatrixXd& X_rot, int r, std::mt19937& rng) {
-    int n = X_rot.rows();
-    int d = X_rot.cols();
-    std::vector<int> indices(d);
-    std::iota(indices.begin(), indices.end(), 0);
-    std::shuffle(indices.begin(), indices.end(), rng);
-    indices.resize(r); 
-
-    Eigen::MatrixXd X_new(n, r);
-    double scale = std::sqrt((double)d / r);
-    for (int j = 0; j < r; j++) X_new.col(j) = X_rot.col(indices[j]) * scale;
-    return {X_new, indices};
-}
-
-std::pair<Eigen::MatrixXd, std::vector<int>> FeatureSRHT_Core::fit_transform_top_r(const Eigen::MatrixXd& X_rot, int r) {
-    int d = X_rot.cols();
-    Eigen::VectorXd norms = X_rot.colwise().squaredNorm();
-    std::vector<std::pair<double, int>> col_norms(d);
-    for (int i = 0; i < d; i++) {
-        double val = std::isfinite(norms[i]) ? norms[i] : -1.0;
-        col_norms[i] = {val, i};
-    }
-    std::sort(col_norms.rbegin(), col_norms.rend());
-
-    std::vector<int> indices(r);
-    Eigen::MatrixXd X_new(X_rot.rows(), r);
-    for (int j = 0; j < r; j++) {
-        indices[j] = col_norms[j].second;
-        X_new.col(j) = X_rot.col(indices[j]);
-    }
-    return {X_new, indices};
-}
-
-std::pair<Eigen::MatrixXd, std::vector<int>> FeatureSRHT_Core::fit_transform_leverage(const Eigen::MatrixXd& X_rot, int r, std::mt19937& rng) {
-    int n = X_rot.rows();
-    int d = X_rot.cols();
-    Eigen::VectorXd norms = X_rot.colwise().squaredNorm();
-    
-    std::vector<double> weights(d);
-    double max_norm = 0.0;
-    
-    for(int i=0; i<d; ++i) {
-        if(std::isfinite(norms[i]) && norms[i] > max_norm) max_norm = norms[i];
-    }
-
-    if(max_norm > 1e-100) { 
-        for(int i=0; i<d; ++i) {
-            if(std::isfinite(norms[i]) && norms[i] > 0) weights[i] = norms[i] / max_norm; 
-            else weights[i] = 0.0;
-        }
-    } else {
-        std::fill(weights.begin(), weights.end(), 1.0);
-    }
-
-    std::discrete_distribution<> dist(weights.begin(), weights.end());
-    std::vector<int> indices;
-    std::vector<bool> is_selected(d, false);
-    int count = 0, attempts = 0;
-    while (count < r && attempts < r*50) {
-        int idx = dist(rng);
-        if (!is_selected[idx]) {
-            is_selected[idx] = true;
-            indices.push_back(idx);
-            count++;
-        }
-        attempts++;
-    }
-    for(int i=0; i<d && count < r; ++i) {
-        if(!is_selected[i]) { indices.push_back(i); count++; }
-    }
-
-    Eigen::MatrixXd X_new(n, r);
-    for (int j = 0; j < r; j++) X_new.col(j) = X_rot.col(indices[j]);
-    return {X_new, indices};
-}
-
-std::pair<Eigen::MatrixXd, std::vector<int>> FeatureSRHT_Core::fit_transform_supervised(const Eigen::MatrixXd& X_rot, const std::vector<int>& labels, int r, double a_param) {
-    int n = X_rot.rows();
-    int d = X_rot.cols();
-    int max_label = *std::max_element(labels.begin(), labels.end());
-    int num_classes = max_label + 1;
-    
-    Eigen::MatrixXd class_sums = Eigen::MatrixXd::Zero(num_classes, d);
-    Eigen::MatrixXd class_sq_sums = Eigen::MatrixXd::Zero(num_classes, d);
-    std::vector<int> class_counts(num_classes, 0);
-    
-    for(int i=0; i<n; ++i) {
-        int c = labels[i];
-        class_counts[c]++;
-        class_sums.row(c) += X_rot.row(i);
-        class_sq_sums.row(c) += X_rot.row(i).array().square().matrix();
-    }
-    
-    Eigen::VectorXd total_sums = X_rot.colwise().sum(); 
-    Eigen::VectorXd term_Av = Eigen::VectorXd::Zero(d);
-    Eigen::VectorXd term_Dv = Eigen::VectorXd::Zero(d);
-    
-    for (int c = 0; c < num_classes; ++c) {
-        if (class_counts[c] == 0) continue;
-        term_Av += (class_sums.row(c).array().square()).transpose().matrix();
-        double coeff = (double)class_counts[c] - a_param * (n - (double)class_counts[c]);
-        term_Dv += coeff * class_sq_sums.row(c).transpose();
-    }
-    term_Av *= (1.0 + a_param);
-    term_Av -= a_param * (total_sums.array().square()).transpose().matrix();
-    
-    Eigen::VectorXd b_scores = term_Dv - term_Av;
-    
-    std::vector<std::pair<double, int>> sorted_scores(d);
+// --- SUPERVISED SCORING (Implemented with Alpha) ---
+// Score = Between_Var - alpha * Within_Var
+// Paper implies prioritizing Separability (Between) and penalizing looseness (Within)
+std::pair<MatrixXd, std::vector<int>> FeatureSRHT_Core::fit_transform_supervised(const MatrixXd& X_rot, const std::vector<int>& labels, int r, double alpha) {
+    int d = X_rot.cols(); int n = X_rot.rows(); std::vector<double> scores(d, 0.0);
+    #pragma omp parallel for
     for(int j=0; j<d; ++j) {
-        double s = b_scores[j];
-        if (!std::isfinite(s)) s = 1e20; 
-        sorted_scores[j] = {s, j};
+        double global_mean = X_rot.col(j).mean();
+        std::map<int, double> bin_sums; std::map<int, int> bin_counts; std::map<int, double> bin_sq_sums;
+        for(int i=0; i<n; ++i) {
+            double val = X_rot(i, j);
+            bin_sums[labels[i]] += val;
+            bin_sq_sums[labels[i]] += val * val;
+            bin_counts[labels[i]]++;
+        }
+        double sb = 0.0; // Between Variance
+        double sw = 0.0; // Within Variance
+        for(auto const& [bin, count] : bin_counts) {
+            double mean = bin_sums[bin] / count;
+            sb += count * std::pow(mean - global_mean, 2);
+            // Within Variance = Sum(x^2) - n*mean^2
+            double sum_sq = bin_sq_sums[bin];
+            sw += (sum_sq - count * mean * mean);
+        }
+        // Maximizing (Between - alpha * Within)
+        scores[j] = sb - (alpha * sw);
     }
-    std::sort(sorted_scores.begin(), sorted_scores.end());
-    
-    std::vector<int> indices(r);
-    Eigen::MatrixXd X_new(n, r);
-    for (int j = 0; j < r; j++) {
-        indices[j] = sorted_scores[j].second;
-        X_new.col(j) = X_rot.col(indices[j]);
-    }
-    return {X_new, indices};
+    std::vector<int> idx(d); std::iota(idx.begin(), idx.end(), 0);
+    std::sort(idx.begin(), idx.end(), [&](int a, int b){ return scores[a] > scores[b]; });
+    idx.resize(r); std::sort(idx.begin(), idx.end());
+    MatrixXd X_sub(X_rot.rows(), r); for(int i=0; i<r; ++i) X_sub.col(i) = X_rot.col(idx[i]);
+    return {X_sub, idx};
+}
+
+// --- STANDARD TRANSFORMS ---
+std::pair<MatrixXd, std::vector<int>> FeatureSRHT_Core::fit_transform_uniform(const MatrixXd& X_rot, int r, std::mt19937& rng) {
+    int d = X_rot.cols(); std::vector<int> idx(d); std::iota(idx.begin(), idx.end(), 0);
+    std::shuffle(idx.begin(), idx.end(), rng); idx.resize(r); std::sort(idx.begin(), idx.end());
+    MatrixXd X_sub(X_rot.rows(), r); for(int i=0; i<r; ++i) X_sub.col(i) = X_rot.col(idx[i]);
+    return {X_sub, idx};
+}
+std::pair<MatrixXd, std::vector<int>> FeatureSRHT_Core::fit_transform_top_r(const MatrixXd& X_rot, int r) {
+    int d = X_rot.cols(); std::vector<std::pair<double, int>> norms(d);
+    #pragma omp parallel for
+    for(int i=0; i<d; ++i) norms[i] = {X_rot.col(i).squaredNorm(), i};
+    std::partial_sort(norms.begin(), norms.begin() + r, norms.end(), std::greater<std::pair<double, int>>());
+    std::vector<int> idx(r); for(int i=0; i<r; ++i) idx[i] = norms[i].second; std::sort(idx.begin(), idx.end());
+    MatrixXd X_sub(X_rot.rows(), r); for(int i=0; i<r; ++i) X_sub.col(i) = X_rot.col(idx[i]);
+    return {X_sub, idx};
+}
+std::pair<MatrixXd, std::vector<int>> FeatureSRHT_Core::fit_transform_leverage(const MatrixXd& X_rot, int r, std::mt19937& rng) {
+    int d = X_rot.cols(); std::vector<double> probs(d);
+    #pragma omp parallel for
+    for(int i=0; i<d; ++i) probs[i] = X_rot.col(i).squaredNorm();
+    double sum = std::accumulate(probs.begin(), probs.end(), 0.0);
+    for(double& p : probs) p /= sum;
+    std::discrete_distribution<int> dist(probs.begin(), probs.end());
+    std::vector<int> idx(r); for(int i=0; i<r; ++i) idx[i] = dist(rng); std::sort(idx.begin(), idx.end());
+    MatrixXd X_sub(X_rot.rows(), r);
+    for(int i=0; i<r; ++i) { double p = probs[idx[i]]; X_sub.col(i) = X_rot.col(idx[i]) * (1.0 / std::sqrt(r * p)); }
+    return {X_sub, idx};
 }

@@ -24,8 +24,12 @@ Rcpp::List fast_subsample(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map
     Eigen::MatrixXd Xs(nSample, p);
     Eigen::VectorXd ys(nSample);
 
+    for (int j = 0; j < p ; ++j) {
+        for (int i = 0; i < nSample; ++i) {
+            Xs(i, j) = X(idxs[i], j);
+        }
+    }
     for (int i = 0; i < nSample; ++i) {
-        Xs.row(i) = X.row(idxs[i]);
         ys(i) = y(idxs[i]);
     }
 

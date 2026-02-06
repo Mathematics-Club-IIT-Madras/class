@@ -4,13 +4,13 @@
 #include <utility>
 #include <omp.h>
 
-inline std::pair<Eigen::MatrixXd, Eigen::VectorXd> iboss_cpp(const Eigen::MatrixXd &X, const Eigen::VectorXd &y, int k, bool intercept) {
+inline void IBOSS(const Eigen::MatrixXd &X, const Eigen::VectorXd &y, Eigen::MatrixXd &X_iboss, Eigen::VectorXd &y_iboss, int k, bool intercept) {
     
     const Eigen::Index p = X.cols();
     const Eigen::Index N = X.rows();
 
     if ((!intercept && p <= 0) || (intercept && p <= 1) || N <= 0) {
-        return {Eigen::MatrixXd(0, p), Eigen::VectorXd(0)};
+        return;
     }
 
     k = std::min<int>(k, static_cast<int>(N));
@@ -81,8 +81,8 @@ inline std::pair<Eigen::MatrixXd, Eigen::VectorXd> iboss_cpp(const Eigen::Matrix
     }
 
     Eigen::Index actual_k = selected_indices.size();
-    Eigen::MatrixXd X_iboss(actual_k, p);
-    Eigen::VectorXd y_iboss(actual_k);
+    X_iboss.resize(actual_k, p);
+    y_iboss.resize(actual_k);
 
     #pragma omp parallel for schedule(static)
     for (Eigen::Index j = 0; j < p; ++j) {
@@ -96,5 +96,5 @@ inline std::pair<Eigen::MatrixXd, Eigen::VectorXd> iboss_cpp(const Eigen::Matrix
         y_iboss(i) = y(selected_indices[i]);
     }
 
-    return {X_iboss, y_iboss};
+    return;
 }

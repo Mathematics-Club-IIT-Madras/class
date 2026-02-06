@@ -15,7 +15,10 @@ LinkingTo:
 Imports: 
     Rcpp,
     data.table,
-    glmnet
+    glmnet,
+    bigmemory,
+    doParallel,
+    foreach
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

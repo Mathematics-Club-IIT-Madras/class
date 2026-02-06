@@ -16,18 +16,12 @@
 #' @importFrom stats coef
 #' @importFrom stats lm.fit
 #' @import glmnet
-#' @import data.table
-#' @import foreach
-#' @import doParallel
-#' @import bigmemory
-#' @import parallel
-#' @import class
 #'
 #' @return A list with:
 #' \itemize{
 #' }
 #' @export
-CLASS <- function(X = NULL, y = NULL, csv = NULL, header = FALSE, nSample = -1, nTimes = -1, k = -1) {
+CLASS_unp <- function(X = NULL, y = NULL, csv = NULL, header = FALSE, nSample = -1, nTimes = -1, k = -1) {
   if (nSample == -1) {
     stop("Check input CLASS(..., nSample = (pos int), ...")
   }
@@ -62,38 +56,21 @@ CLASS <- function(X = NULL, y = NULL, csv = NULL, header = FALSE, nSample = -1, 
     stop("nSample cannot be larger than number of rows in X")
   }
 
-  X_big <- as.big.matrix(x = X, type = "double", backingfile = "X.bin", descriptorfile = "X.desc")
-  X_desc <- describe(X_big)
+  freq_count <- rep(0, p)
 
-  y_big <- as.big.matrix(x = matrix(y, ncol = 1), type = "double", backingfile = "y.bin", descriptorfile = "y.desc")
-  y_desc <- describe(y_big)
+  cat("\n")
+  for(i in 1:nTimes) {
+    data_sub <- fast_subsample(X, y, as.integer(nSample))
 
-  nC <- parallel::detectCores() - 1
-  cl <- makeCluster(nC)
-  registerDoParallel(cl)
-
-  accumulator <- function(acc, vec) {
-    acc + vec
-  }
-  freq_count <- foreach(i = 1:nTimes, .packages = c("bigmemory", "glmnet", "class"), .combine = accumulator) %dopar% {
-    if (i %% 1 == 0) paste(".") # Need an alternative here cuz parallel sessions?
-
-    X_ref <- attach.big.matrix(X_desc)
-    y_ref <- attach.big.matrix(y_desc)
-    set.seed(42 + i)
-    idx <- sample(seq_len(nrow(X_ref)), nSample)
-    X_sub <- X_ref[idx, , drop = FALSE]
-    y_sub <- y_ref[idx]
-
-    fit <- glmnet::cv.glmnet(x = X_sub, y = y_sub, alpha = 1)
+    fit <- glmnet::cv.glmnet(x = data_sub$X_subsampled, y = data_sub$y_subsampled, alpha = 1)
     coefs <- coef(fit, s = "lambda.min")[-1]
-    as.numeric(coefs != 0)
-  }
-  gc() # Should check if this affects runtime
-  stopCluster(cl)
 
-  # Should optimise the below
+    freq_count <- freq_count + as.numeric(coefs != 0)
+    if(i %% 10 == 0) cat(".")
+  }
+  cat("\n")
   kboss_res <- kBOSS(X, y, freq_count, k)
+
   X_final <- kboss_res$X
   y_final <- kboss_res$y
   active_vars <- kboss_res$selected_vars
@@ -113,8 +90,7 @@ CLASS <- function(X = NULL, y = NULL, csv = NULL, header = FALSE, nSample = -1, 
 
   mse <- mean(residuals^2)
   r_squared <- 1 - sum(residuals^2) / sum((y - mean(y))^2)
-
-  unlink(c("X.bin", "X.desc", "y.bin", "y.desc"))
+  print(mse)
   return(invisible(list(
     X_f = X_final,
     y_f = y_final,

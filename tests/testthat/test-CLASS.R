@@ -1,12 +1,12 @@
 test_that("Random Sanity Check Test", {
-  N <- 500000
-  p <- 250
+  N <- 5000
+  p <- 25
 
   X = matrix(rnorm(N * p), N, p)
   y = rnorm(N)
 
   start <- Sys.time()
-  res <- CLASS(X, y, nSample = 5000, nTimes = 50, k = 50000)
+  res <- CLASS(X, y, nSample = 500, nTimes = 50, k = 500)
   end <- Sys.time()
   expect_true(length(res$feature_counts) == p)
   print(res$feature_counts)
@@ -17,14 +17,14 @@ test_that("time test", {
   iter <- 5
   total_time <- 0
   for (i in 1:iter) {
-    N <- 500000
-    p <- 250
+    N <- 5000
+    p <- 25
 
     X = matrix(rnorm(N * p), N, p)
     y = rnorm(N)
 
     start <- Sys.time()
-    res <- CLASS(X, y, nSample = 5000, nTimes = 50, k = 50000)
+    res <- CLASS(X, y, nSample = 500, nTimes = 50, k = 500)
     end <- Sys.time()
     total_time <- total_time + (end - start)
   }

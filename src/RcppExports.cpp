@@ -11,9 +11,30 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// k_selection_cpp
-Rcpp::List k_selection_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y, int k, bool intercept);
-RcppExport SEXP _class_k_selection_cpp(SEXP XSEXP, SEXP ySEXP, SEXP kSEXP, SEXP interceptSEXP) {
+// run_featuresrht_wrapper
+List run_featuresrht_wrapper(Eigen::MatrixXd X, Eigen::VectorXd y, Rcpp::Nullable<Eigen::MatrixXd> X_test_in, Rcpp::Nullable<Eigen::VectorXd> y_test_in, int r, int bins, double alpha, bool run_uni, bool run_top, bool run_lev, bool run_sup);
+RcppExport SEXP _class_run_featuresrht_wrapper(SEXP XSEXP, SEXP ySEXP, SEXP X_test_inSEXP, SEXP y_test_inSEXP, SEXP rSEXP, SEXP binsSEXP, SEXP alphaSEXP, SEXP run_uniSEXP, SEXP run_topSEXP, SEXP run_levSEXP, SEXP run_supSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type X(XSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Eigen::MatrixXd> >::type X_test_in(X_test_inSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Eigen::VectorXd> >::type y_test_in(y_test_inSEXP);
+    Rcpp::traits::input_parameter< int >::type r(rSEXP);
+    Rcpp::traits::input_parameter< int >::type bins(binsSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< bool >::type run_uni(run_uniSEXP);
+    Rcpp::traits::input_parameter< bool >::type run_top(run_topSEXP);
+    Rcpp::traits::input_parameter< bool >::type run_lev(run_levSEXP);
+    Rcpp::traits::input_parameter< bool >::type run_sup(run_supSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_featuresrht_wrapper(X, y, X_test_in, y_test_in, r, bins, alpha, run_uni, run_top, run_lev, run_sup));
+    return rcpp_result_gen;
+END_RCPP
+}
+// IBOSS_cpp
+Rcpp::List IBOSS_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y, int k, bool intercept);
+RcppExport SEXP _class_IBOSS_cpp(SEXP XSEXP, SEXP ySEXP, SEXP kSEXP, SEXP interceptSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +42,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y(ySEXP);
     Rcpp::traits::input_parameter< int >::type k(kSEXP);
     Rcpp::traits::input_parameter< bool >::type intercept(interceptSEXP);
-    rcpp_result_gen = Rcpp::wrap(k_selection_cpp(X, y, k, intercept));
+    rcpp_result_gen = Rcpp::wrap(IBOSS_cpp(X, y, k, intercept));
+    return rcpp_result_gen;
+END_RCPP
+}
+// kBOSS
+Rcpp::List kBOSS(Eigen::MatrixXd& X, Eigen::VectorXd& y, Rcpp::NumericVector freqs, int k_iboss);
+RcppExport SEXP _class_kBOSS(SEXP XSEXP, SEXP ySEXP, SEXP freqsSEXP, SEXP k_ibossSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type freqs(freqsSEXP);
+    Rcpp::traits::input_parameter< int >::type k_iboss(k_ibossSEXP);
+    rcpp_result_gen = Rcpp::wrap(kBOSS(X, y, freqs, k_iboss));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -38,17 +73,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// kBOSS
-Rcpp::List kBOSS(Eigen::MatrixXd& X, Eigen::VectorXd& y, Rcpp::NumericVector freqs, int k_iboss);
-RcppExport SEXP _class_kBOSS(SEXP XSEXP, SEXP ySEXP, SEXP freqsSEXP, SEXP k_ibossSEXP) {
+// fast_subsample
+Rcpp::List fast_subsample(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map<Eigen::VectorXd>& y, int nSample);
+RcppExport SEXP _class_fast_subsample(SEXP XSEXP, SEXP ySEXP, SEXP nSampleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type freqs(freqsSEXP);
-    Rcpp::traits::input_parameter< int >::type k_iboss(k_ibossSEXP);
-    rcpp_result_gen = Rcpp::wrap(kBOSS(X, y, freqs, k_iboss));
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type nSample(nSampleSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_subsample(X, y, nSample));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -88,28 +122,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// fast_subsample
-Rcpp::List fast_subsample(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map<Eigen::VectorXd>& y, int nSample);
-RcppExport SEXP _class_fast_subsample(SEXP XSEXP, SEXP ySEXP, SEXP nSampleSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type nSample(nSampleSEXP);
-    rcpp_result_gen = Rcpp::wrap(fast_subsample(X, y, nSample));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_class_k_selection_cpp", (DL_FUNC) &_class_k_selection_cpp, 4},
-    {"_class_SRHT_cpp", (DL_FUNC) &_class_SRHT_cpp, 3},
+    {"_class_run_featuresrht_wrapper", (DL_FUNC) &_class_run_featuresrht_wrapper, 11},
+    {"_class_IBOSS_cpp", (DL_FUNC) &_class_IBOSS_cpp, 4},
     {"_class_kBOSS", (DL_FUNC) &_class_kBOSS, 4},
+    {"_class_SRHT_cpp", (DL_FUNC) &_class_SRHT_cpp, 3},
+    {"_class_fast_subsample", (DL_FUNC) &_class_fast_subsample, 3},
     {"_class_r2", (DL_FUNC) &_class_r2, 2},
     {"_class_MSE", (DL_FUNC) &_class_MSE, 2},
     {"_class_betaOLS_closed", (DL_FUNC) &_class_betaOLS_closed, 2},
-    {"_class_fast_subsample", (DL_FUNC) &_class_fast_subsample, 3},
     {NULL, NULL, 0}
 };
 

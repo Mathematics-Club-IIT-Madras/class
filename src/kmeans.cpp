@@ -4,9 +4,10 @@
 #include <omp.h>
 #include <random>
 #include <Eigen/Dense>
-#include "class_helpers.hpp"
 
-std::vector<int> KMeans_helper(const std::vector<double>& counts) {
+#include "KMeans.hpp"
+
+std::vector<int> KMeans2(const std::vector<double>& counts) {
     int q = counts.size();
     if (q == 0) return {};
 
@@ -16,7 +17,7 @@ std::vector<int> KMeans_helper(const std::vector<double>& counts) {
 
     double m1 = counts[dist(mt)];
     double m2 = counts[dist(mt)];
-    if (m1 == m2) m2 += 0.01;
+    if (m1 == m2) m2 += 2;
 
     double pm1 = m1, pm2 = m2;
     int iter = 0;

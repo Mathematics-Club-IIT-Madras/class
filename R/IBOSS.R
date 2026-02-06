@@ -52,6 +52,6 @@ IBOSS <- function(X = NULL, y = NULL, csv = NULL, k, intercept = FALSE, header =
   if (nrow(X) != length(y)) stop("X and y must have same number of rows.")
   if (!is.numeric(X) || !is.numeric(y)) stop("X and y must be numeric.")
 
-  res <- suppressWarnings(k_selection_cpp(X, y, as.integer(k), intercept))
+  res <- suppressWarnings(IBOSS_cpp(X, y, as.integer(k), intercept))
   return(res)
 }

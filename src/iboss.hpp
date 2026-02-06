@@ -3,4 +3,4 @@
 #include <utility>
 #include "iboss.cpp"
 
-inline std::pair<Eigen::MatrixXd, Eigen::VectorXd> iboss_cpp(const Eigen::MatrixXd &X, const Eigen::VectorXd &y, int k, bool intercept = false);
+inline void IBOSS(const Eigen::MatrixXd &X, const Eigen::VectorXd &y, Eigen::MatrixXd &X_iboss, Eigen::VectorXd &y_iboss, int k, bool intercept = false);

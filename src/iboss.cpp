@@ -32,25 +32,23 @@ inline void IBOSS(const Eigen::MatrixXd &X, const Eigen::VectorXd &y, Eigen::Mat
         auto greater = [&X, j](int a, int b) { return X(a, j) > X(b, j); };
         auto lesser = [&X, j](int a, int b) { return X(a, j) < X(b, j); };
 
-
-
         int r_max = std::min<int>(r, u - current_offset);
-        std::partial_sort(nums.begin() + current_offset, 
-                          nums.begin() + current_offset + r_max, 
-                          nums.end(), greater);
-
-        current_offset += r_max;
-
-
+        if (r_max > 0) {
+            std::nth_element(nums.begin() + current_offset, 
+                             nums.begin() + current_offset + r_max - 1, 
+                             nums.end(), greater);
+            current_offset += r_max;
+        }
         
         if (current_offset >= u) break;
 
         int r_min = std::min<int>(r, u - current_offset);
-        std::partial_sort(nums.begin() + current_offset, 
-                          nums.begin() + current_offset + r_min, 
-                          nums.end(), lesser);
-
-        current_offset += r_min;
+        if (r_min > 0) {
+            std::nth_element(nums.begin() + current_offset, 
+                             nums.begin() + current_offset + r_min - 1, 
+                             nums.end(), lesser);
+            current_offset += r_min;
+        }
     }
 
     X_iboss.resize(current_offset, p);

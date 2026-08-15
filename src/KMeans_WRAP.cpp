@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <random>
 #include <utility>
-#include "iboss.hpp"
+#include "iboss.h"
 #include "KMeans.hpp"
 
 // [[Rcpp::export]]
@@ -29,4 +29,9 @@ Rcpp::List kBOSS(Eigen::MatrixXd& X, Eigen::VectorXd& y, Rcpp::NumericVector fre
 		Rcpp::Named("y") = y_iboss,
 		Rcpp::Named("selected_vars") = active_vars
 	);
+}
+
+// [[Rcpp::export]]
+Rcpp::NumericVector kmeans2(Rcpp::NumericVector &freq_count) {
+	return Rcpp::wrap(KMeans2(Rcpp::as<std::vector<double>>(freq_count)));
 }

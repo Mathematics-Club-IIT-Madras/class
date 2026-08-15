@@ -5,20 +5,32 @@ run_featuresrht_wrapper <- function(X, y, X_test_in, y_test_in, r, bins, alpha, 
     .Call(`_class_run_featuresrht_wrapper`, X, y, X_test_in, y_test_in, r, bins, alpha, run_uni, run_top, run_lev, run_sup)
 }
 
-HT_cpp <- function(X, y) {
-    .Call(`_class_HT_cpp`, X, y)
+endPart <- function(nLASSO_K, nC, m, p, freq_count) {
+    .Call(`_class_endPart`, nLASSO_K, nC, m, p, freq_count)
 }
 
-IBOSS_cpp <- function(X, y, k, intercept = FALSE) {
-    .Call(`_class_IBOSS_cpp`, X, y, k, intercept)
+HT_cpp <- function(X, y) {
+    .Call(`_class_HT_cpp`, X, y)
 }
 
 kBOSS <- function(X, y, freqs, k_iboss) {
     .Call(`_class_kBOSS`, X, y, freqs, k_iboss)
 }
 
+kmeans2 <- function(freq_count) {
+    .Call(`_class_kmeans2`, freq_count)
+}
+
 SRHT_cpp <- function(X, y, r) {
     .Call(`_class_SRHT_cpp`, X, y, r)
+}
+
+geniboss_cpp <- function(A, X, y, r) {
+    .Call(`_class_geniboss_cpp`, A, X, y, r)
+}
+
+iboss_cpp <- function(X, y, k, intercept, add_logs) {
+    .Call(`_class_iboss_cpp`, X, y, k, intercept, add_logs)
 }
 
 fast_subsample <- function(X, y, nSample) {

@@ -15,6 +15,7 @@ LinkingTo:
 Imports: 
     Rcpp,
     data.table,
+    fastglm,
     glmnet,
     bigmemory,
     doParallel,

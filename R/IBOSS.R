@@ -129,7 +129,7 @@ IBOSS <- function(
     k,
     intercept = FALSE,
     header = FALSE,
-    add_logs = TRUE) {
+    add_logs = FALSE) {
 
   if (!is.logical(intercept) || length(intercept) != 1L || is.na(intercept)) {
     stop("intercept must be a single TRUE/FALSE value.")

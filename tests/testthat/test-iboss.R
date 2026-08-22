@@ -20,7 +20,7 @@ test_that("sanity check", {
 test_that("Time Test", {
   N <- 500000
   p <- 250
-  k <- N/ 10
+  k <- N/10
   X = matrix(rnorm(N * p, 0, 10), N, p)
   y = rnorm(N)
 
@@ -28,7 +28,7 @@ test_that("Time Test", {
   res <- IBOSS(X = X, y = y, k = k)
   end <- Sys.time()
 
-  expect_true(nrow(res$X_selected) <= k)
-  cat(nrow(res$X_selected))
-  cat("\nTime taken:", end - start, "\n")
+  expect_true(nrow(res$X_selected) == k)
+  print(nrow(res$X_selected))
+  print(end - start)
 })

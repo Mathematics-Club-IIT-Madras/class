@@ -1,21 +1,45 @@
-test_that("GenIBOSS works across supported families", {
-  set.seed(42)
-  X <- matrix(rnorm(400), ncol = 4)
-  beta <- c(1, -1, 0.5, 2)
-  eta <- X %*% beta
-  p <- 1 / (1 + exp(-eta))
-  y <- rbinom(nrow(X), 1, p)
+test_that("IBOSS benchmark", {
 
-  fit <- GenIBOSS(
-    X = X,
-    y = y,
-    nSample = 50,
-    k = 200,
-    family = binomial(),
-    add_logs = TRUE
+  n <- 50000
+  p <- 500
+  k <- 1000L
+
+  set.seed(2026L)
+
+  X <- matrix(
+    rnorm(n * p),
+    nrow = n,
+    ncol = p
   )
 
-  print(fit$final_model)
-  print(fit$X_selected)
-  print(fit$y_selected)
+  beta <- rnorm(p)
+
+  y <- as.numeric(
+    X %*% beta + rnorm(n)
+  )
+
+  start <- proc.time()[["elapsed"]]
+
+  selected <- IBOSS(
+    X = X,
+    y = y,
+    k = k,
+    add_logs = FALSE
+  )
+
+  elapsed <- proc.time()[["elapsed"]] - start
+
+  print(
+    data.frame(
+      Method = "DOPT",
+      n = n,
+      p = p,
+      k = k,
+      Seconds = elapsed,
+      SelectedRows = nrow(selected$X_selected)
+    )
+  )
+
+  expect_true(is.finite(elapsed))
+  expect_true(nrow(selected$X_selected) > 0)
 })

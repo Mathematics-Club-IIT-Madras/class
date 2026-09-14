@@ -1,2 +1,6 @@
 .Rproj.user
 tests/performance/*.dat
+
+# Datasets
+tests/testthat/ht_tests/*_n10000_p250.csv
+tests/testthat/normal_data.csv

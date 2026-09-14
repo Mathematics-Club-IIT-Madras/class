@@ -79,7 +79,7 @@ summarise_clear_benchmark <- function(rows) {
     "false_negative_rate", "jaccard_to_reference", "coefficient_error",
     "test_mse", "test_r_squared", "iterations_used", "wall_clock_seconds",
     "iterations_saved", "wall_clock_seconds_saved", "early_exit",
-    "incorrect_early_exit", "max_iter_without_convergence", "oracle_test_mse"
+    "incorrect_early_exit", "max_iter_without_convergence"
   )
   data.frame(
     metric = numeric_columns,
@@ -96,7 +96,7 @@ test_that("CLEAR runs on synthetic multivariate normal data and writes a compari
   active_count <- 50L
   n_sample <- as.integer(Sys.getenv("CLEAR_BENCHMARK_SAMPLE", "1000"))
   reference_iterations <- as.integer(Sys.getenv("CLEAR_BENCHMARK_REFERENCE", "200"))
-  output_dir <- Sys.getenv("CLEAR_BENCHMARK_OUTPUT_DIR", "benchmark-output")
+  output_dir <- Sys.getenv("CLEAR_BENCHMARK_OUTPUT_DIR", tempdir())
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
   rows <- vector("list", repetitions)
@@ -121,9 +121,8 @@ test_that("CLEAR runs on synthetic multivariate normal data and writes a compari
       seed = 5000 + replication
     )
 
-    clear_prediction <- clear$intercept + test$X %*% clear$coefficients
+    clear_prediction <- cbind(1, test$X) %*% c(0, clear$coefficients)
     clear_residual <- test$y - clear_prediction
-    oracle_residual <- test$y - test$X %*% train$beta
     metrics <- classification_metrics(
       clear$selected_indices, train$active, reference$selected_indices
     )
@@ -133,7 +132,6 @@ test_that("CLEAR runs on synthetic multivariate normal data and writes a compari
       coefficient_error = sqrt(sum((clear$coefficients - train$beta)^2)),
       test_mse = mean(clear_residual^2),
       test_r_squared = 1 - sum(clear_residual^2) / sum((test$y - mean(test$y))^2),
-      oracle_test_mse = mean(oracle_residual^2),
       iterations_used = clear$iterations_used,
       wall_clock_seconds = clear_elapsed,
       iterations_saved = 100L - clear$iterations_used,

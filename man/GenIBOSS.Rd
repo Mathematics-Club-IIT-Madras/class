@@ -2,7 +2,7 @@
 % Please edit documentation in R/Gen_IBOSS.R
 \name{GenIBOSS}
 \alias{GenIBOSS}
-\title{GenIBOSS}
+\title{Generalized Information-Based Optimal Subdata Selection}
 \usage{
 GenIBOSS(
   X = NULL,
@@ -12,34 +12,112 @@ GenIBOSS(
   k = -1,
   family,
   intercept = FALSE,
-  header = FALSE
+  header = FALSE,
+  add_logs = FALSE
 )
 }
 \arguments{
-\item{X}{Numeric matrix of predictors.}
+\item{X}{A numeric matrix of predictor variables. Each row corresponds
+to an observation and each column to a predictor. Ignored if \code{csv}
+is provided.}
 
-\item{y}{Numeric response vector.}
+\item{y}{A numeric response vector with one element for each row of
+\code{X}. Ignored if \code{csv} is provided.}
 
-\item{csv}{Path to CSV file (alternative to X, y).
-Last column is assumed to be response.}
+\item{csv}{An optional character string specifying the path to a CSV
+file containing the dataset. When supplied, the last column is assumed
+to contain the response variable and all preceding columns are treated
+as predictors. If \code{csv} is provided, \code{X} and \code{y} should be \code{NULL}.}
 
-\item{nSample}{Number of rows to be subsampled for
-initial estimate of parameters}
+\item{nSample}{A positive integer specifying the size of the pilot
+subsample used to obtain an initial estimate of the model parameters.}
 
-\item{k}{Integer; Number of points to select.}
+\item{k}{A positive integer specifying the number of observations
+selected for the final subdata.}
 
-\item{family}{Family of distribution}
+\item{family}{A GLM family object (e.g. \code{gaussian()}, \code{binomial()},
+\code{poisson()}) specifying the response distribution and link function.}
 
-\item{intercept}{Logical; whether first column is intercept.}
+\item{intercept}{Logical indicating whether the first column of \code{X}
+corresponds to an intercept term. If \code{TRUE}, an intercept column is
+included before fitting the pilot model if one is not already present.}
 
-\item{header}{Logical; whether the csv files contains a header row.}
+\item{header}{Logical indicating whether the CSV file specified by
+\code{csv} contains a header row.}
 }
 \value{
-A list with:
+A list containing the following components:
 \itemize{
-\item final_model: result after performing glm on subsampled data.
+\item \code{X_selected}: Numeric matrix containing the selected
+subdata predictors.
+\item \code{y_selected}: Numeric vector containing the selected
+responses.
+\item \code{final_model}: Fitted generalized linear model of class
+\code{"fastglm"} fitted on the selected subdata.
 }
 }
 \description{
-Runs the IBOSS algorithm on given dataset.
+Select an informative subdata for fitting generalized linear and other
+nonlinear regression models using the GenIBOSS (Generalized Information-
+Based Optimal Subdata Selection) algorithm. GenIBOSS is designed for
+large-scale regression problems where fitting a model on the full dataset
+is computationally expensive. The method extends the original IBOSS
+algorithm for linear regression to a broad class of nonlinear models.
+}
+\details{
+GenIBOSS extends the Information-Based Optimal Subdata Selection (IBOSS)
+algorithm from linear regression to a broad class of nonlinear models,
+including generalized linear models. Similar to IBOSS, the objective is
+to construct a deterministic subdata that retains as much statistical
+information as possible while substantially reducing the computational
+cost of model fitting.
+
+For nonlinear models, the Fisher information matrix can be written as
+\deqn{
+I(\delta)=\sum_{i=1}^{N}\delta_i\,z_i z_i^\top,
+}
+where \eqn{z_i} is a model-dependent transformation of the covariates.
+For generalized linear models,
+\deqn{
+z_i=
+\frac{\left|\dot g^{-1}(x_i^\top\theta)\right|}
+{\sqrt{\mathrm{Var}(Y_i\mid x_i)}}x_i,
+}
+where \eqn{g} is the link function.
+
+Since the transformed covariates depend on the unknown model parameters,
+GenIBOSS first draws a pilot subsample of size \code{nSample} and fits the
+specified generalized linear model to obtain an initial parameter estimate.
+This estimate is then used to construct the transformed covariates, after
+which the IBOSS selection strategy is applied to obtain the final subdata.
+A generalized linear model is finally fitted using the selected
+observations.
+
+The algorithm reduces to the original IBOSS method when the response
+follows a Gaussian distribution with the identity link.
+}
+\examples{
+set.seed(42)
+X <- matrix(rnorm(400), ncol = 4)
+beta <- c(1, -1, 0.5, 2)
+eta <- X \%*\% beta
+p <- 1 / (1 + exp(-eta))
+y <- rbinom(nrow(X), 1, p)
+
+fit <- GenIBOSS(
+  X = X,
+  y = y,
+  nSample = 50,
+  k = 80,
+  family = binomial()
+)
+
+coef(fit)
+}
+\references{
+Yu, J., Liu, J., and Wang, H.
+\emph{Information-Based Optimal Subdata Selection for Non-linear Models.}
+}
+\author{
+Mathematics Club, IIT Madras
 }

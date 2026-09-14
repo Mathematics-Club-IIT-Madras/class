@@ -57,11 +57,6 @@
 #' z_i=
 #' \frac{\left|\dot g^{-1}(x_i^\top\theta)\right|}
 #' {\sqrt{\mathrm{Var}(Y_i\mid x_i)}}x_i,
-#' @return A list with:
-#' \itemize{
-#'   \item X_selected: Numeric matrix of selected subset data.
-#'   \item y_selected: Numeric vector of selected subset response.
-#'   \item final_model: Result after performing glm on selected subset.
 #' }
 #' where \eqn{g} is the link function.
 #'
@@ -76,9 +71,15 @@
 #' The algorithm reduces to the original IBOSS method when the response
 #' follows a Gaussian distribution with the identity link.
 #'
-#' @return
-#' A fitted generalized linear model of class `"fastglm"` obtained by
-#' fitting the specified model to the selected subdata.
+#' @return A list containing the following components:
+#' \itemize{
+#'   \item \code{X_selected}: Numeric matrix containing the selected
+#'   subdata predictors.
+#'   \item \code{y_selected}: Numeric vector containing the selected
+#'   responses.
+#'   \item \code{final_model}: Fitted generalized linear model of class
+#'   `"fastglm"` fitted on the selected subdata.
+#' }
 #'
 #' @export
 #'

@@ -605,7 +605,6 @@ class_early_exit <- function(
 
   active_set <- if (is.null(previous_active_set)) integer() else previous_active_set
   final_coefficients <- numeric(feature_count)
-  final_intercept <- NA_real_
   regression_failed <- FALSE
   if (length(active_set) > 0L && iterations_run > 0L) {
     design <- cbind(1, X[, active_set, drop = FALSE])
@@ -614,7 +613,6 @@ class_early_exit <- function(
       any(!is.finite(regression$coefficients)) ||
       regression$rank < ncol(design)
     if (!regression_failed) {
-      final_intercept <- regression$coefficients[1L]
       final_coefficients[active_set] <- regression$coefficients[-1L]
     }
   } else if (is.null(failure_reason)) {
@@ -656,7 +654,6 @@ class_early_exit <- function(
       selection_counts[, seq_len(iterations_run), drop = FALSE]
     } else matrix(numeric(), nrow = feature_count, ncol = 0),
     coefficients = final_coefficients,
-    intercept = final_intercept,
     fit_failures = fit_failures
   )
 }

@@ -4,31 +4,105 @@
 \alias{IBOSS}
 \title{IBOSS}
 \usage{
-IBOSS(X = NULL, y = NULL, csv = NULL, k, intercept = FALSE, header = FALSE)
+IBOSS(
+  X = NULL,
+  y = NULL,
+  csv = NULL,
+  k,
+  intercept = FALSE,
+  header = FALSE,
+  add_logs = FALSE
+)
 }
 \arguments{
-\item{X}{Numeric matrix of predictors.}
+\item{X}{A numeric matrix of predictor variables. Each row corresponds
+to an observation and each column to a predictor. Ignored if \code{csv}
+is provided.}
 
-\item{y}{Numeric response vector.}
+\item{y}{A numeric response vector with one element for each row of
+\code{X}. Ignored if \code{csv} is provided.}
 
-\item{csv}{Path to CSV file (alternative to X, y).
-Last column is assumed to be response.}
+\item{csv}{An optional character string specifying the path to a CSV
+file containing the dataset. When supplied, the last column is assumed
+to contain the response variable and all preceding columns are treated
+as predictors. If \code{csv} is provided, \code{X} and \code{y} should be \code{NULL}.}
 
-\item{k}{Integer; Number of points to select.}
+\item{k}{Integer;  A positive integer specifying the number of observations to
+select using the IBOSS algorithm.}
 
-\item{intercept}{Logical; whether first column is intercept.}
+\item{intercept}{Logical; indicating whether the first column of \code{X}
+corresponds to an intercept term. If \code{TRUE}, the intercept column is
+excluded from the subdata selection criterion.}
 
-\item{header}{Logical; whether the csv files contains a header row.}
+\item{header}{Logical; indicating whether the CSV file specified by
+\code{csv} contains a header row.}
 }
 \value{
-A list with:
+A list wi#' Information Based Optimal Subdata Selection
+
+Select a deterministic subdata using the IBOSS (Information-Based
+Optimal Subdata Selection) algorithm. IBOSS is designed for large-scale
+linear regression problems where fitting a model on the full dataset is
+computationally expensive.
+
+A list containing the following components:
+
 \itemize{
-\item X_selected: Numeric matrix of subset data
-\item y_selected: Numeric vector of subset response
+\item \code{X_selected}: A numeric matrix of dimension
+\eqn{k \times p}, where \eqn{k} is the requested subdata size and
+\eqn{p} is the number of predictor variables.
+
+\item \code{y_selected}: A numeric vector of length \eqn{k}
+containing the responses corresponding to the selected observations.
 }
 }
 \description{
 Runs the IBOSS algorithm on given dataset.
+}
+\details{
+The IBOSS (Information-Based Optimal Subdata Selection) algorithm is
+motivated by the \emph{D-optimality} criterion from the design of
+experiments. The objective is to select a subset of observations that
+maximizes the determinant of the Fisher information matrix, thereby
+retaining as much information about the regression coefficients as
+possible.
+
+For the linear regression model
+\deqn{y = X\beta + \varepsilon, \qquad
+\varepsilon \sim N(0,\sigma^2I),}
+the Fisher information matrix is
+\deqn{
+I(\beta)=\frac{X^\top X}{\sigma^2}.
+}
+
+More generally, the Fisher information matrix is defined as
+\deqn{
+I(\theta)
+=
+-E\left[
+\frac{\partial^2 \log f(X;\theta)}
+{\partial\theta\,\partial\theta^\top}
+\right],
+}
+where \eqn{\theta} denotes the model parameters and
+\eqn{f(X;\theta)} is the likelihood function.
+
+Since finding the exact D-optimal subset is computationally infeasible
+for massive datasets, IBOSS constructs a deterministic subdata by
+selecting observations with extreme covariate values. Theoretical
+analysis in the original paper establishes the lower bound
+\deqn{
+|I(\beta)|
+\ge
+\frac{k^{p+1}}
+{4^p\sigma^{2(p+1)}}
+\prod_{j=1}^{p}
+\left(z_{(n)j}-z_{(1)j}\right)^2,
+}
+where \eqn{k} is the subdata size,
+\eqn{p} is the number of predictors,
+and \eqn{z_{(1)j}} and \eqn{z_{(n)j}} denote the minimum and maximum
+values of the \eqn{j}-th predictor, respectively.
 }
 \examples{
 
@@ -40,4 +114,14 @@ str(res)
 
 
 
+}
+\references{
+Wang, H., Yang, M., and Stufken, J. (2019).
+\emph{Information-Based Optimal Subdata Selection for Big Data Linear Regression.}
+Journal of the American Statistical Association,
+114(525), 393--405.
+doi:10.1080/01621459.2017.1408468
+}
+\author{
+Mathematics Club, IIT Madras
 }

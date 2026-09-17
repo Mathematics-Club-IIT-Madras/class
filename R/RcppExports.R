@@ -5,10 +5,6 @@ HT_cpp <- function(X, y) {
     .Call(`_sublime_HT_cpp`, X, y)
 }
 
-iboss_cpp <- function(X, y, k, intercept, add_logs) {
-    .Call(`_sublime_iboss_cpp`, X, y, k, intercept, add_logs)
-}
-
 kBOSS <- function(X, y, freqs, k_iboss) {
     .Call(`_sublime_kBOSS`, X, y, freqs, k_iboss)
 }
@@ -23,5 +19,9 @@ SRHT_cpp <- function(X, y, r) {
 
 geniboss_cpp <- function(A, X, y, r) {
     .Call(`_sublime_geniboss_cpp`, A, X, y, r)
+}
+
+iboss_cpp <- function(X, y, k, intercept, add_logs) {
+    .Call(`_sublime_iboss_cpp`, X, y, k, intercept, add_logs)
 }
 

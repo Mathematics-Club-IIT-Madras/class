@@ -44,6 +44,8 @@ included before fitting the pilot model if one is not already present.}
 
 \item{header}{Logical indicating whether the CSV file specified by
 \code{csv} contains a header row.}
+
+\item{add_logs}{Logical indicating whether model fit is to be returned}
 }
 \value{
 A list containing the following components:

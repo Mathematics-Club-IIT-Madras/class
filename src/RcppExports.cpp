@@ -23,21 +23,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// iboss_cpp
-Rcpp::List iboss_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y, int k, bool intercept, bool add_logs);
-RcppExport SEXP _sublime_iboss_cpp(SEXP XSEXP, SEXP ySEXP, SEXP kSEXP, SEXP interceptSEXP, SEXP add_logsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< bool >::type intercept(interceptSEXP);
-    Rcpp::traits::input_parameter< bool >::type add_logs(add_logsSEXP);
-    rcpp_result_gen = Rcpp::wrap(iboss_cpp(X, y, k, intercept, add_logs));
-    return rcpp_result_gen;
-END_RCPP
-}
 // kBOSS
 Rcpp::List kBOSS(Eigen::MatrixXd& X, Eigen::VectorXd& y, Rcpp::NumericVector freqs, int k_iboss);
 RcppExport SEXP _sublime_kBOSS(SEXP XSEXP, SEXP ySEXP, SEXP freqsSEXP, SEXP k_ibossSEXP) {
@@ -90,14 +75,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// iboss_cpp
+Rcpp::List iboss_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y, int k, bool intercept, bool add_logs);
+RcppExport SEXP _sublime_iboss_cpp(SEXP XSEXP, SEXP ySEXP, SEXP kSEXP, SEXP interceptSEXP, SEXP add_logsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< bool >::type intercept(interceptSEXP);
+    Rcpp::traits::input_parameter< bool >::type add_logs(add_logsSEXP);
+    rcpp_result_gen = Rcpp::wrap(iboss_cpp(X, y, k, intercept, add_logs));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sublime_HT_cpp", (DL_FUNC) &_sublime_HT_cpp, 2},
-    {"_sublime_iboss_cpp", (DL_FUNC) &_sublime_iboss_cpp, 5},
     {"_sublime_kBOSS", (DL_FUNC) &_sublime_kBOSS, 4},
     {"_sublime_kmeans2", (DL_FUNC) &_sublime_kmeans2, 1},
     {"_sublime_SRHT_cpp", (DL_FUNC) &_sublime_SRHT_cpp, 3},
     {"_sublime_geniboss_cpp", (DL_FUNC) &_sublime_geniboss_cpp, 4},
+    {"_sublime_iboss_cpp", (DL_FUNC) &_sublime_iboss_cpp, 5},
     {NULL, NULL, 0}
 };
 

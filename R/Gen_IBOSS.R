@@ -35,6 +35,8 @@
 #' @param header Logical indicating whether the CSV file specified by
 #'   `csv` contains a header row.
 #'
+#' @param add_logs Logical indicating whether model fit is to be returned
+#'
 #' @useDynLib sublime, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #' @import fastglm
@@ -108,7 +110,7 @@
 #'
 #' coef(fit)
 GenIBOSS <- function(X = NULL, y = NULL, csv = NULL, nSample=-1, k=-1, family, intercept = FALSE, header = FALSE, add_logs = FALSE) {
-  if (nSample == -1) {
+  if (identical(nSample, -1) || identical(nSample, -1L)) {
     stop("Check input GenIBOSS(..., nSample = (pos int), ...")
   }
   if (!is.logical(intercept) || length(intercept) != 1L || is.na(intercept)) {

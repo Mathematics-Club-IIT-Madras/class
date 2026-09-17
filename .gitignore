@@ -1,5 +1,6 @@
 .Rproj.user
 tests/performance/*.dat
+.Rhistory
 
 # Datasets
 tests/testthat/ht_tests/*_n10000_p250.csv

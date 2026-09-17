@@ -36,6 +36,8 @@ excluded from the subdata selection criterion.}
 
 \item{header}{Logical; indicating whether the CSV file specified by
 \code{csv} contains a header row.}
+
+\item{add_logs}{Logical indicating whether model fit is to be returned}
 }
 \value{
 A list wi#' Information Based Optimal Subdata Selection

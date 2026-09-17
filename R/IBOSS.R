@@ -42,6 +42,8 @@
 #' @param header Logical; indicating whether the CSV file specified by
 #'   `csv` contains a header row.
 #'
+#' @param add_logs Logical indicating whether model fit is to be returned
+#'
 #' @useDynLib sublime, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'

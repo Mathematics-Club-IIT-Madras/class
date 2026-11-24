@@ -17,92 +17,6 @@ using Index = Eigen::Index;
 using Clock = std::chrono::steady_clock;
 
 // -----------------------------------------------------------------------------
-// Reference implementation of the current algorithm.
-// Kept here specifically for correctness benchmarking.
-// -----------------------------------------------------------------------------
-void IBOSS_reference_impl(
-    const Eigen::Ref<const Eigen::MatrixXd>& X,
-    const Eigen::Ref<const Eigen::VectorXd>& y,
-    Eigen::MatrixXd& X_iboss,
-    Eigen::VectorXd& y_iboss,
-    int k)
-{
-    const Index p = X.cols();
-    const Index N = X.rows();
-
-    if (p <= 0 || N <= 0 || k <= 0) {
-        X_iboss.resize(0, p);
-        y_iboss.resize(0);
-        return;
-    }
-
-    k = std::min<int>(k, static_cast<int>(N));
-
-    const int num_features = static_cast<int>(p);
-    int r = k / (2 * num_features);
-    if (r == 0) r = 1;
-
-    const int u = std::min<int>(k, 2 * num_features * r);
-
-    std::vector<int> nums(static_cast<std::size_t>(N));
-    std::iota(nums.begin(), nums.end(), 0);
-
-    int current_offset = 0;
-
-    for (Index j = 0; j < p && current_offset < u; ++j) {
-        const double* col = X.col(j).data();
-
-        const int r_max = std::min(r, u - current_offset);
-        if (r_max > 0) {
-            auto first = nums.begin() + current_offset;
-            auto nth   = first + (r_max - 1);
-            auto last  = nums.end();
-            std::nth_element(
-                first, nth, last,
-                [col](int a, int b) noexcept {
-                    return col[a] > col[b];
-                }
-            );
-
-            current_offset += r_max;
-        }
-
-        if (current_offset >= u) break;
-
-        const int r_min = std::min(r, u - current_offset);
-        if (r_min > 0) {
-            auto first = nums.begin() + current_offset;
-            auto nth   = first + (r_min - 1);
-            auto last  = nums.end();
-
-            std::nth_element(
-                first, nth, last,
-                [col](int a, int b) noexcept {
-                    return col[a] < col[b];
-                }
-            );
-
-            current_offset += r_min;
-        }
-    }
-
-    X_iboss.resize(current_offset, p);
-    y_iboss.resize(current_offset);
-
-    for (Index j = 0; j < p; ++j) {
-        const double* src = X.col(j).data();
-        double* dst = X_iboss.col(j).data();
-        for (int i = 0; i < current_offset; ++i)
-            dst[i] = src[nums[static_cast<std::size_t>(i)]];
-    }
-
-    const double* y_ptr = y.data();
-    double* y_out = y_iboss.data();
-    for (int i = 0; i < current_offset; ++i)
-        y_out[i] = y_ptr[nums[static_cast<std::size_t>(i)]];
-}
-
-// -----------------------------------------------------------------------------
 // Fused Single-Pass Dual Heap Nodes & Comparators
 // Storing value directly eliminates indirect pointer dereferencing in comparisons.
 // -----------------------------------------------------------------------------
@@ -139,13 +53,15 @@ struct TopHeap {
     void consider(const HeapNode& node) {
         if (r <= 0) return;
 
-        TopComp comp;
         if (static_cast<int>(h.size()) < r) {
             h.push_back(node);
-            std::push_heap(h.begin(), h.end(), comp);
+            std::push_heap(h.begin(), h.end(), TopComp{});
             return;
         }
 
+        if (node.val < h.front().val) return;
+
+        TopComp comp;
         if (comp(node, h.front())) {
             std::pop_heap(h.begin(), h.end(), comp);
             h.back() = node;
@@ -166,13 +82,15 @@ struct BottomHeap {
     void consider(const HeapNode& node) {
         if (r <= 0) return;
 
-        BottomComp comp;
         if (static_cast<int>(h.size()) < r) {
             h.push_back(node);
-            std::push_heap(h.begin(), h.end(), comp);
+            std::push_heap(h.begin(), h.end(), BottomComp{});
             return;
         }
 
+        if (node.val > h.front().val) return;
+
+        BottomComp comp;
         if (comp(node, h.front())) {
             std::pop_heap(h.begin(), h.end(), comp);
             h.back() = node;
@@ -343,15 +261,39 @@ void IBOSS(
 
 #ifdef _OPENMP
             #pragma omp barrier
-            #pragma omp for schedule(static) nowait
 #endif
-            for (Index i = 0; i < N; ++i) {
-                const int idx = static_cast<int>(i);
-                if (!selected[static_cast<std::size_t>(idx)]) {
-                    const double val = col[i];
-                    HeapNode node{val, idx};
-                    if (q_max > 0) max_heap.consider(node);
-                    if (q_min > 0) min_heap.consider(node);
+            if (q_max > 0 && q_min > 0) {
+#ifdef _OPENMP
+                #pragma omp for schedule(static) nowait
+#endif
+                for (Index i = 0; i < N; ++i) {
+                    const int idx = static_cast<int>(i);
+                    if (!selected[static_cast<std::size_t>(idx)]) {
+                        const double val = col[i];
+                        HeapNode node{val, idx};
+                        max_heap.consider(node);
+                        min_heap.consider(node);
+                    }
+                }
+            } else if (q_max > 0) {
+#ifdef _OPENMP
+                #pragma omp for schedule(static) nowait
+#endif
+                for (Index i = 0; i < N; ++i) {
+                    const int idx = static_cast<int>(i);
+                    if (!selected[static_cast<std::size_t>(idx)]) {
+                        max_heap.consider(HeapNode{col[i], idx});
+                    }
+                }
+            } else if (q_min > 0) {
+#ifdef _OPENMP
+                #pragma omp for schedule(static) nowait
+#endif
+                for (Index i = 0; i < N; ++i) {
+                    const int idx = static_cast<int>(i);
+                    if (!selected[static_cast<std::size_t>(idx)]) {
+                        min_heap.consider(HeapNode{col[i], idx});
+                    }
                 }
             }
 #ifdef _OPENMP
@@ -454,14 +396,4 @@ void IBOSS(
         << "Total     : " << (selection_time + x_time + y_time) << " s\n"
         << "==================================\n";
 #endif
-}
-
-void IBOSS_reference(
-    const Eigen::Ref<const Eigen::MatrixXd>& X,
-    const Eigen::Ref<const Eigen::VectorXd>& y,
-    Eigen::MatrixXd& X_iboss,
-    Eigen::VectorXd& y_iboss,
-    int k)
-{
-    IBOSS_reference_impl(X, y, X_iboss, y_iboss, k);
 }

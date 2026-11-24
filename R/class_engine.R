@@ -9,7 +9,7 @@
     set.seed(seeds[i])
     idx <- sample.int(nrow(X_ref), nSample)
     y_sub <- as.numeric(y_ref[idx, 1])
-    if (length(unique(y_sub)) < 2L) next
+    if (all(y_sub == y_sub[1L])) next
     counts <- counts + .class_lasso(X_ref[idx, , drop = FALSE], y_sub)
   }
   counts
@@ -30,15 +30,23 @@
     X <- predictors
     set.seed(seeds[i])
     idx <- sample.int(nrow(X), nSample)
-    if (length(unique(y[idx])) < 2L) return(numeric(ncol(X)))
+    if (all(y[idx] == y[idx][1L])) return(numeric(ncol(X)))
     .class_lasso(X[idx, , drop = FALSE], y[idx])
   }
   if (cores == 1L) {
-    result <- lapply(seq_len(nTimes), work, predictors = X, y = y, nSample = nSample, seeds = seeds)
+    counts <- numeric(ncol(X))
+    for (i in seq_len(nTimes)) {
+      set.seed(seeds[i])
+      idx <- sample.int(nrow(X), nSample)
+      if (all(y[idx] == y[idx][1L])) next
+      counts <- counts + .class_lasso(X[idx, , drop = FALSE], y[idx])
+    }
+    return(counts)
   } else if (.Platform$OS.type == "unix") {
     result <- parallel::mclapply(seq_len(nTimes), work, predictors = X, y = y,
       nSample = nSample, seeds = seeds, mc.cores = cores, mc.set.seed = FALSE)
     if (any(vapply(result, inherits, logical(1), "try-error"))) stop("A CLASS worker failed.")
+    return(Reduce("+", result))
   } else {
     # All workers attach to the same backing files. Each copies only its sample.
     prefix <- basename(tempfile("sublime-class-", tmpdir = tempdir()))
@@ -62,8 +70,8 @@
     batches <- split(seq_len(nTimes), rep(seq_len(cores), length.out = nTimes))
     result <- parallel::parLapply(cl, batches, .class_shared_worker,
       X_desc = X_desc, y_desc = y_desc, nSample = nSample, seeds = seeds)
+    return(Reduce("+", result))
   }
-  Reduce(function(a, b) a + b, result)
 }
 .class_final <- function(X, y, counts, k) {
   p <- ncol(X)
@@ -82,7 +90,9 @@
     beta[active] <- coefficients[-1]
     rank <- fit$rank
   }
-  residual <- y - as.numeric(intercept + X %*% beta)
+  if (!is.null(colnames(X))) names(beta) <- colnames(X)
+  pred <- if (length(active)) as.numeric(X[, active, drop = FALSE] %*% beta[active]) else 0
+  residual <- y - as.numeric(intercept + pred)
   tss <- sum((y - mean(y))^2)
   list(X_f = selected$X, y_f = selected$y, intercept_hat = unname(intercept),
        beta_final = beta, selected_indices = active, feature_counts = counts,
@@ -103,5 +113,6 @@
   if (ncol(X) < 2L) stop("CLASS requires at least two predictor columns for glmnet.")
   training <- if (transform) HT(X, y, seed = if (is.null(seed)) sample.int(.Machine$integer.max, 1L) else seed) else list(X_f = X, y_f = y)
   counts <- .class_counts(training$X_f, training$y_f, nSample, nTimes, seed)
+  rm(training)
   invisible(.class_final(X, y, counts, k))
 }

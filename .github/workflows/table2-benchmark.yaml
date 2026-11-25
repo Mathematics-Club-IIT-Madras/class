@@ -1,4 +1,4 @@
-name: Table 2 CPU Benchmark
+name: IBOSS Benchmark Table
 
 on:
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
   benchmark:
     name: Benchmark (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 90
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:

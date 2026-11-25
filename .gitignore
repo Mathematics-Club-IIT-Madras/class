@@ -15,3 +15,4 @@ tests/testthat/normal_data.csv
 
 # Local verification copies, libraries, logs and release archives
 /verification/
+benchmark-results/

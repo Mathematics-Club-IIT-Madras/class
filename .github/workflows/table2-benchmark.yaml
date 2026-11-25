@@ -1,0 +1,87 @@
+name: Table 2 CPU Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      n_sizes:
+        description: 'Comma-separated sample sizes n (default: 5000,50000,500000)'
+        required: false
+        default: '5000,50000,500000'
+        type: string
+      reps:
+        description: 'Number of replications per n'
+        required: false
+        default: '1'
+        type: string
+      cores:
+        description: 'CPU cores/threads for CLASS and OpenMP'
+        required: false
+        default: '1'
+        type: string
+      n_sample:
+        description: 'CLASS subsample size (nSample)'
+        required: false
+        default: '1000'
+        type: string
+      n_times:
+        description: 'CLASS LASSO repetitions (nTimes)'
+        required: false
+        default: '100'
+        type: string
+      k:
+        description: 'Selected subdata size (k)'
+        required: false
+        default: '1000'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Benchmark (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      TABLE2_N_SIZES: ${{ inputs.n_sizes || '5000,50000,500000' }}
+      TABLE2_P: '500'
+      TABLE2_P1: '50'
+      TABLE2_K: ${{ inputs.k || '1000' }}
+      TABLE2_N_SAMPLE: ${{ inputs.n_sample || '1000' }}
+      TABLE2_N_TIMES: ${{ inputs.n_times || '100' }}
+      TABLE2_REPS: ${{ inputs.reps || '1' }}
+      TABLE2_CORES: ${{ inputs.cores || '1' }}
+      TABLE2_OUT_DIR: 'benchmark-results'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          http-user-agent: release
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          needs: check
+
+      - name: Install sublime from source
+        shell: Rscript {0}
+        run: install.packages(".", repos = NULL, type = "source")
+
+      - name: Run Table 2 timing benchmark
+        shell: Rscript {0}
+        run: source("tests/performance/table2-class-benchmark.R")
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: table2-benchmark-${{ matrix.os }}
+          path: benchmark-results/
+          if-no-files-found: warn
+

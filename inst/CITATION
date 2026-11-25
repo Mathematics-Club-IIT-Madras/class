@@ -4,4 +4,4 @@ bibentry(bibtype = "Manual",
              person("Anirudh", "Prasanna"), person("Arjun", "Arunachalam"),
              person("Deenabandhan", "N"), person("Mohit", "Rathi")),
   year = "2026", note = "R package version 0.1.0",
-  url = "https://github.com/aditi0110/classAV")
+  url = "https://github.com/Mathematics-Club-IIT-Madras/class")

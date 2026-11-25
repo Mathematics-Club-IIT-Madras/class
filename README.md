@@ -18,6 +18,11 @@ These algorithms are:
 install.packages("sublime_0.1.0.tar.gz", repos = NULL, type = "source")
 library(sublime)
 ```
+Alternatively, clone the repository using git clone and run the following commands:
+```r
+install.packages("/path/to/folder", repos = NULL, type = "source")
+library(sublime)
+```
 
 ## Usage
 
@@ -131,17 +136,14 @@ res$beta_final
 res$mse
 ```
 
-## References
-IBOSS: H. Wang, M. Yang, and J. Stufken, “Information-based optimal subdata selection for big
-data linear regression,” Journal of the American Statistical Association, vol. 114, no. 525,
-pp. 393–405, 2019. https://doi.org/10.1080/01621459.2017.1408468
+### HT()
 
-GenIBOSS: J. Yu, J. Liu, and H. Wang, "Information-based optimal subdata selection for non-linear models," Statistical Papers, vol. 64, no. 4, pp. 1069–1093, Aug. 2023. https://doi.org/10.1007/s00362-023-01430-3
+The data matrix and the target vector are multiplied by a Hadamard Matrix and a diagonal matrix with 1s and -1s (chosen randomly).
 
-CLASS: R. Singh and J. Stufken, “Subdata selection with a large number of variables,” The New
-England Journal of Statistics in Data Science, vol. 1, no. 3, pp. 426–438, 2023. https://doi.org/10.51387/23-NEJSDS36
-
-SRHT: J. A. Tropp, "Improved analysis of the subsampled randomized Hadamard transform," Adv. Adapt. Data Anal., vol. 3, no. 1–2, pp. 115–126, 2011. https://doi.org/10.1142/S1793536911000787
+```r
+res <- HT(X = X, y = y, intercept = TRUE)
+str(res)
+```
 
 ## Reproducibility and resources
 
@@ -154,3 +156,15 @@ support `set.seed()`; HT and SRHT with `seed = NULL` use native entropy.
 Windows parallel workers attach to shared bigmemory backing files in the
 R temporary directory. Each worker copies only its sampled rows for fitting.
 Workers and backing files are cleaned up on completion or error.
+
+## References
+IBOSS: H. Wang, M. Yang, and J. Stufken, “Information-based optimal subdata selection for big
+data linear regression,” Journal of the American Statistical Association, vol. 114, no. 525,
+pp. 393–405, 2019. https://doi.org/10.1080/01621459.2017.1408468
+
+GenIBOSS: J. Yu, J. Liu, and H. Wang, "Information-based optimal subdata selection for non-linear models," Statistical Papers, vol. 64, no. 4, pp. 1069–1093, Aug. 2023. https://doi.org/10.1007/s00362-023-01430-3
+
+CLASS: R. Singh and J. Stufken, “Subdata selection with a large number of variables,” The New
+England Journal of Statistics in Data Science, vol. 1, no. 3, pp. 426–438, 2023. https://doi.org/10.51387/23-NEJSDS36
+
+SRHT: J. A. Tropp, "Improved analysis of the subsampled randomized Hadamard transform," Adv. Adapt. Data Anal., vol. 3, no. 1–2, pp. 115–126, 2011. https://doi.org/10.1142/S1793536911000787

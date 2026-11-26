@@ -26,6 +26,9 @@
   cores <- min(cores, nTimes)
   # Per-fit seeds are generated in the parent, so scheduling does not alter RNG.
   seeds <- sample.int(.Machine$integer.max, nTimes)
+  # Undo the per-fit reseeding on exit, so the RNG only advances by the draws above.
+  parent_state <- .sublime_rng_state()
+  on.exit(.sublime_restore_rng(parent_state), add = TRUE)
   work <- function(i, predictors, y, nSample, seeds) {
     X <- predictors
     set.seed(seeds[i])
@@ -107,7 +110,13 @@
   k <- .sublime_integer(k, "k")
   seed <- .sublime_seed(seed)
   if (nSample > nrow(X)) stop("nSample cannot be larger than number of rows in X.")
-  if (!is.null(seed)) set.seed(seed)
+  if (k > nrow(X)) stop("k cannot be larger than number of rows in X.")
+  # A supplied seed applies to this call only; the caller's RNG state is restored.
+  if (!is.null(seed)) {
+    caller_state <- .sublime_rng_state()
+    on.exit(.sublime_restore_rng(caller_state), add = TRUE)
+    set.seed(seed)
+  }
   if (all(y == y[1])) return(invisible(.class_final(X, y, numeric(ncol(X)), k)))
   if (nSample < 3L) stop("nSample must be at least 3 for cross-validation.")
   if (ncol(X) < 2L) stop("CLASS requires at least two predictor columns for glmnet.")

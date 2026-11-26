@@ -41,7 +41,9 @@
 #'   the number of observations in the dataset.
 #'
 #' @param seed Optional integer specifying the random seed for reproducible
-#'   subsampling and execution. Defaults to \code{NULL}.
+#'   subsampling and execution. A supplied seed applies to this call only;
+#'   the previous random number state is restored on exit. Defaults to
+#'   \code{NULL}, which draws from the current random number stream.
 #'
 #' @return A list containing the following components:
 #' \itemize{

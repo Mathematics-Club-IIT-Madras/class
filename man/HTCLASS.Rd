@@ -38,9 +38,12 @@ cross-validation unless the response is constant.}
 \item{nTimes}{Positive integer giving the number of repeated LASSO fits.}
 
 \item{k}{Positive integer giving the number of observations selected by the
-final IBOSS step.}
+final IBOSS step. It cannot exceed the number of rows in the data.}
 
-\item{seed}{Optional non-negative integer random seed.}
+\item{seed}{Optional non-negative integer random seed. A supplied seed
+applies to this call only; the previous random number state is restored
+on exit. Defaults to \code{NULL}, which draws from the current random
+number stream.}
 }
 \value{
 A list containing:

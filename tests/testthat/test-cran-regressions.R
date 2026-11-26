@@ -65,6 +65,31 @@ test_that("set.seed controls both CLASS pipelines", {
     expect_identical(a, b)
   }
 })
+test_that("CLASS variants reject k larger than the number of rows", {
+  X <- matrix(seq_len(30), 10, 3)
+  for (fun in list(CLASS, HTCLASS)) {
+    expect_error(fun(X, seq_len(10), nSample = 5, nTimes = 1, k = 11),
+                 "k cannot be larger")
+  }
+})
+
+test_that("CLASS variants leave the caller's random number stream intact", {
+  X <- matrix(seq_len(240)/100, 60, 4); y <- sin(seq_len(60))
+  for (fun in list(CLASS, HTCLASS)) {
+    # A supplied seed does not change what the caller draws next.
+    set.seed(5); expected <- runif(3)
+    set.seed(5); fun(X, y, nSample = 30, nTimes = 2, k = 20, seed = 99)
+    expect_identical(runif(3), expected)
+    # Without a seed, the number of internal fits' RNG use does not leak out.
+    set.seed(5); fun(X, y, nSample = 30, nTimes = 2, k = 20); a <- runif(3)
+    set.seed(5)
+    testthat::with_mocked_bindings(
+      fun(X, y, nSample = 30, nTimes = 2, k = 20),
+      .class_lasso = function(X, y) numeric(ncol(X)), .package = "sublime")
+    expect_identical(runif(3), a)
+  }
+})
+
 test_that("GenIBOSS reuses an intercept and rejects unusable pilots", {
   set.seed(13); X <- matrix(rnorm(300), 100, 3); y <- 4 + X[,1] + rnorm(100)
   set.seed(8); a <- GenIBOSS(X, y, nSample=50, k=30, family=gaussian(), intercept=TRUE, add_logs=TRUE)

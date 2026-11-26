@@ -47,7 +47,9 @@ select in the final subselection performed by IBOSS. It cannot exceed
 the number of observations in the dataset.}
 
 \item{seed}{Optional integer specifying the random seed for reproducible
-subsampling and execution. Defaults to \code{NULL}.}
+subsampling and execution. A supplied seed applies to this call only;
+the previous random number state is restored on exit. Defaults to
+\code{NULL}, which draws from the current random number stream.}
 }
 \value{
 A list containing the following components:

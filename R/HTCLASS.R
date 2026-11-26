@@ -24,9 +24,12 @@
 #'   At least three rows and two predictor columns are required for LASSO
 #'   cross-validation unless the response is constant.
 #' @param nTimes Positive integer giving the number of repeated LASSO fits.
-#' @param seed Optional non-negative integer random seed.
+#' @param seed Optional non-negative integer random seed. A supplied seed
+#'   applies to this call only; the previous random number state is restored
+#'   on exit. Defaults to \code{NULL}, which draws from the current random
+#'   number stream.
 #' @param k Positive integer giving the number of observations selected by the
-#'   final IBOSS step.
+#'   final IBOSS step. It cannot exceed the number of rows in the data.
 #'
 #' @useDynLib sublime, .registration = TRUE
 #' @importFrom Rcpp evalCpp

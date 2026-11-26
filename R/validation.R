@@ -13,6 +13,17 @@
   if (is.null(seed)) return(NULL)
   .sublime_integer(seed, "seed", 0)
 }
+# NULL means the session has not used R's RNG yet.
+.sublime_rng_state <- function() {
+  get0(".Random.seed", envir = globalenv(), inherits = FALSE)
+}
+.sublime_restore_rng <- function(state) {
+  if (!is.null(state)) {
+    assign(".Random.seed", state, envir = globalenv())
+  } else if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
+    rm(".Random.seed", envir = globalenv())
+  }
+}
 .sublime_data <- function(X, y, csv, header) {
   .sublime_flag(header, "header")
   if (!is.null(csv)) {

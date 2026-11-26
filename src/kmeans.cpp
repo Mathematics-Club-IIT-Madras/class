@@ -59,9 +59,14 @@ std::vector<int> KMeans2(const std::vector<double>& counts) {
         return a.idx < b.idx;
     });
 
-    // Zero-variance edge case: all elements identical
+    // Zero-variance edge case: there is nothing to split. Keep every variable
+    // if all were selected equally often, and none if none was ever selected.
     if (arr.front().val == arr.back().val) {
-        return {};
+        std::vector<int> all_vars;
+        if (arr.front().val > 0) {
+            for (int i = 0; i < q; ++i) all_vars.push_back(i);
+        }
+        return all_vars;
     }
 
     double total_sum = 0.0;

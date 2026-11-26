@@ -736,7 +736,7 @@ test_that("Tier 2 - BVA.8: KMeans2 handles zero variance in feature counts (all 
   expect_identical(res_zeros, integer(0))
 
   res_identical <- sublime:::kmeans2(c(5, 5, 5, 5, 5))
-  expect_identical(res_identical, integer(0))
+  expect_identical(res_identical, 0:4)
 })
 
 test_that("Tier 2 - BVA.9: KMeans2 handles single feature count (p = 1)", {

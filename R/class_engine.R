@@ -69,7 +69,8 @@
     X_desc <- bigmemory::describe(X_big)
     y_desc <- bigmemory::describe(y_big)
     cl <- parallel::makeCluster(cores)
-    parallel::clusterCall(cl, base::.libPaths, .libPaths())
+    # Pass the function by name: a serialized .libPaths only changes a copy.
+    parallel::clusterCall(cl, ".libPaths", .libPaths())
     batches <- split(seq_len(nTimes), rep(seq_len(cores), length.out = nTimes))
     result <- parallel::parLapply(cl, batches, .class_shared_worker,
       X_desc = X_desc, y_desc = y_desc, nSample = nSample, seeds = seeds)

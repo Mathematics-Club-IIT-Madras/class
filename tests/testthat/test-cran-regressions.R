@@ -90,6 +90,18 @@ test_that("CLASS variants leave the caller's random number stream intact", {
   }
 })
 
+test_that("CLASS variants keep predictors that are selected equally often", {
+  set.seed(1)
+  X <- matrix(rnorm(400), 200, 2); y <- drop(1 + X %*% c(3, -2) + rnorm(200))
+  for (fun in list(CLASS, HTCLASS)) {
+    out <- testthat::with_mocked_bindings(
+      fun(X, y, nSample = 50, nTimes = 3, k = 40, seed = 1),
+      .class_lasso = function(X, y) c(1, 1), .package = "sublime")
+    expect_identical(sort(out$selected_indices), 1:2)
+    expect_true(all(out$beta_final != 0))
+  }
+})
+
 test_that("GenIBOSS reuses an intercept and rejects unusable pilots", {
   set.seed(13); X <- matrix(rnorm(300), 100, 3); y <- 4 + X[,1] + rnorm(100)
   set.seed(8); a <- GenIBOSS(X, y, nSample=50, k=30, family=gaussian(), intercept=TRUE, add_logs=TRUE)

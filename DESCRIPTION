@@ -9,7 +9,6 @@ Authors@R: c(
     person("Deenabandhan", "N",     email = "deenabandhann@gmail.com", role = "aut"),
     person("Mohit", "Rathi",        email = "mohitrathi2490@gmail.com", role = "aut"),
     person("Neelesh","Upadhyay",    email = "neelesh@iitm.ac.in", role = "rev" ))              
-Author: Aditi Vaidya [aut, cre], Anirudh Narayanan [aut], Anirudh Prasanna [aut], Arjun Arunachalam [aut], Deenabandhan N [aut], Mohit Rathi [aut]
 Maintainer: Aditi Vaidya <aditiv2004@googlemail.com>
 Description:
     Provides methods for efficient subdata selection for large-scale and high-dimensional regression problems. 
@@ -21,8 +20,8 @@ Description:
     uses IBOSS to select an informative subset of observations for regression. The package also implements 
     HT-CLASS, which applies a Hadamard transform before the row-sampling step to improve the identification 
     of active variables whose signals are concentrated in a small subset of observations.
-URL: https://github.com/Mathematics-Club-IIT-Madras/class
-BugReports: https://github.com/Mathematics-Club-IIT-Madras/class/issues
+URL: https://github.com/Mathematics-Club-IIT-Madras/subselectR
+BugReports: https://github.com/Mathematics-Club-IIT-Madras/subselectR/issues
 License: GPL-3
 SystemRequirements: C++20
 Encoding: UTF-8

@@ -52,9 +52,8 @@ Randomized Subsampled Hadamard Transform
 Applies a randomized Hadamard sketch to a regression design matrix and
 response vector, then returns a transformed subdata of the requested size.
 The sketch uses random sign modulation, a fast Walsh-Hadamard transform,
-and uniform sampling of transformed rows. This mixes the 'information' contained in
-each observation, ensuring that on subsampling, we do not miss out on 'important'
-rows. This function performs the sketching step only; it does not fit a regression model.
+and uniform sampling of transformed rows. This function performs the
+sketching step only; it does not fit a regression model.
 
 Let \code{X} have \code{n} rows and \code{p} predictor columns. SRHT first pads the rows
 to \code{n_padded}, the smallest power of two greater than or equal to \code{n}.

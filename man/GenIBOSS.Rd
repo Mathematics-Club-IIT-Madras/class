@@ -68,6 +68,7 @@ is computationally expensive. The method extends the original IBOSS
 algorithm for linear regression to a broad class of nonlinear models.
 }
 \details{
+Pilot sampling uses R's RNG and can be controlled with set.seed().
 A first column of ones is reused when intercept = TRUE. If add_logs = TRUE
 and an intercept must be inserted, X_selected includes that extra column.
 Failed, rank-deficient or non-finite pilot fits are rejected.
@@ -98,8 +99,6 @@ This estimate is then used to construct the transformed covariates, after
 which the IBOSS selection strategy is applied to obtain the final subdata.
 A generalized linear model is finally fitted using the selected
 observations.
-
-Pilot sampling uses R's RNG and can be controlled with set.seed().
 
 The algorithm reduces to the original IBOSS method when the response
 follows a Gaussian distribution with the identity link.

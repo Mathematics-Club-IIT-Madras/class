@@ -90,9 +90,7 @@ where \eqn{\theta} denotes the model parameters and
 
 Since finding the exact D-optimal subset is computationally infeasible
 for massive datasets, IBOSS constructs a deterministic subdata by
-selecting observations with extreme covariate values. This method is motivating by
-certain inequalities involving the fisher information matrix, which imply that choosing this
-subdata ensures that a large amount of information is retained. Requested sizes are
+selecting observations with extreme covariate values. Requested sizes are
 capped at the number of input rows. Ties use original row indices; any
 remaining quota is filled in original row order without replacement.
 }

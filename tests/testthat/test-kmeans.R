@@ -1,8 +1,8 @@
 test_that("kmeans2 is deterministic", {
   counts <- c(0, 2, 4, 7, 10, 12, 15)
 
-  first_result <- sublime:::kmeans2(counts)
-  second_result <- sublime:::kmeans2(counts)
+  first_result <- subselectR:::kmeans2(counts)
+  second_result <- subselectR:::kmeans2(counts)
 
   expect_identical(first_result, second_result)
   expect_type(first_result, "integer")
@@ -15,7 +15,7 @@ test_that("active sets use the higher-frequency cluster", {
     c(8, 9, 10, 2, 3, 1)
   )
 
-  active_sets <- sublime:::class_active_sets(pi_hat)
+  active_sets <- subselectR:::class_active_sets(pi_hat)
 
   expect_length(active_sets, 2)
   expect_identical(active_sets[[1]], 4:6)
@@ -26,7 +26,7 @@ test_that("active-set stability requires consecutive checkpoint successes", {
   stable_column <- c(10, 11, 1, 2)
   stable_pi_hat <- matrix(rep(stable_column, 18), nrow = 4)
 
-  stable_result <- sublime:::class_active_set_stability(stable_pi_hat)
+  stable_result <- subselectR:::class_active_set_stability(stable_pi_hat)
 
   expect_true(stable_result$stable)
   expect_equal(stable_result$checkpoint_indices, c(3, 8, 13, 18))
@@ -35,7 +35,7 @@ test_that("active-set stability requires consecutive checkpoint successes", {
 
   unstable_pi_hat <- stable_pi_hat
   unstable_pi_hat[, 13:18] <- rep(c(1, 2, 10, 11), 6)
-  unstable_result <- sublime:::class_active_set_stability(unstable_pi_hat)
+  unstable_result <- subselectR:::class_active_set_stability(unstable_pi_hat)
 
   expect_false(unstable_result$stable)
   expect_equal(unstable_result$jaccard[c(8, 13, 18)], c(1, 0, 1))
@@ -50,7 +50,7 @@ test_that("Wilson intervals produce a positive active-set separation gap", {
   )
   active_sets <- list(1:2, 1:2)
 
-  separation <- sublime:::class_uncertainty_separation(
+  separation <- subselectR:::class_uncertainty_separation(
     successes = successes,
     trials = 40,
     active_sets = active_sets
@@ -72,7 +72,7 @@ test_that("patience rule requires consecutive successful checkpoints", {
     nrow = 4
   )
 
-  result <- sublime:::class_patience_rule(
+  result <- subselectR:::class_patience_rule(
     pi_hat = pi_hat,
     successes = successes,
     trials = 10,
@@ -89,7 +89,7 @@ test_that("patience rule requires consecutive successful checkpoints", {
 
   changed_pi_hat <- pi_hat
   changed_pi_hat[, 5] <- changed_pi_hat[, 5] + c(0.02, 0.02, 0, 0)
-  reset_result <- sublime:::class_patience_rule(
+  reset_result <- subselectR:::class_patience_rule(
     pi_hat = changed_pi_hat,
     successes = successes,
     trials = 10,
@@ -111,7 +111,7 @@ test_that("early-exit CLASS respects warm-up and maximum iteration cap", {
   X <- matrix(rnorm(40 * 4), nrow = 40, ncol = 4)
   y <- rnorm(40)
 
-  result <- sublime:::class_early_exit(
+  result <- subselectR:::class_early_exit(
     X = X,
     y = y,
     nSample = 10,

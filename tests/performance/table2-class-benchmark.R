@@ -7,7 +7,7 @@
 #   Methods: Full, UNI, IBOSS, SIS(100)-IBOSS, CLASS
 # ==============================================================================
 
-library(sublime)
+library(subselectR)
 
 parse_int_env <- function(name, default) {
   val <- Sys.getenv(name, "")
@@ -88,7 +88,7 @@ run_table2_benchmark <- function() {
   out_dir  <- Sys.getenv("TABLE2_OUT_DIR", file.path(getwd(), "benchmark-results"))
 
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  old_opts <- options(mc.cores = cores, sublime.threads = cores)
+  old_opts <- options(mc.cores = cores, subselectR.threads = cores)
   on.exit(options(old_opts), add = TRUE)
 
   os_label <- paste0(.Platform$OS.type, " (", Sys.info()[["sysname"]], ")")
@@ -132,7 +132,7 @@ run_table2_benchmark <- function() {
       cat("  Running IBOSS...\n")
       t_iboss <- time_block({
         set.seed(rep_seed + 3L)
-        sub <- sublime::IBOSS(X = X, y = y, k = k_eff, add_logs = FALSE)
+        sub <- subselectR::IBOSS(X = X, y = y, k = k_eff, add_logs = FALSE)
         fit_lasso_ols(sub$X_selected, sub$y_selected)
       })
 
@@ -143,14 +143,14 @@ run_table2_benchmark <- function() {
         cors <- abs(drop(stats::cor(X, y)))
         cors[!is.finite(cors)] <- 0
         top100 <- order(cors, decreasing = TRUE)[seq_len(min(100L, p))]
-        sub <- sublime::IBOSS(X = X[, top100, drop = FALSE], y = y, k = k_eff, add_logs = FALSE)
+        sub <- subselectR::IBOSS(X = X[, top100, drop = FALSE], y = y, k = k_eff, add_logs = FALSE)
         fit_lasso_ols(sub$X_selected, sub$y_selected)
       })
 
       # 5. CLASS
       cat("  Running CLASS...\n")
       t_class <- time_block({
-        sublime::CLASS(
+        subselectR::CLASS(
           X = X, y = y,
           nSample = n_sample_eff,
           nTimes = n_times,

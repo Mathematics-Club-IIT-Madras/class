@@ -1,31 +1,31 @@
 # Shared boundary checks; validate before coercion or statistical shortcuts.
-.sublime_integer <- function(x, name, minimum = 1) {
+.subselectR_integer <- function(x, name, minimum = 1) {
   if (!is.numeric(x) || length(x) != 1L || !is.finite(x) ||
       x < minimum || x > .Machine$integer.max || x != floor(x))
     stop(name, " must be a finite integer between ", minimum, " and ", .Machine$integer.max, ".")
   as.integer(x)
 }
-.sublime_flag <- function(x, name) {
+.subselectR_flag <- function(x, name) {
   if (!is.logical(x) || length(x) != 1L || is.na(x))
     stop(name, " must be a single TRUE/FALSE value.")
 }
-.sublime_seed <- function(seed) {
+.subselectR_seed <- function(seed) {
   if (is.null(seed)) return(NULL)
-  .sublime_integer(seed, "seed", 0)
+  .subselectR_integer(seed, "seed", 0)
 }
 # NULL means the session has not used R's RNG yet.
-.sublime_rng_state <- function() {
+.subselectR_rng_state <- function() {
   get0(".Random.seed", envir = globalenv(), inherits = FALSE)
 }
-.sublime_restore_rng <- function(state) {
+.subselectR_restore_rng <- function(state) {
   if (!is.null(state)) {
     assign(".Random.seed", state, envir = globalenv())
   } else if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
     rm(".Random.seed", envir = globalenv())
   }
 }
-.sublime_data <- function(X, y, csv, header) {
-  .sublime_flag(header, "header")
+.subselectR_data <- function(X, y, csv, header) {
+  .subselectR_flag(header, "header")
   if (!is.null(csv)) {
     if (!is.character(csv) || length(csv) != 1L || is.na(csv) || !file.exists(csv))
       stop("CSV file doesn't exist at given path.")

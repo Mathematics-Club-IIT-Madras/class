@@ -20,15 +20,15 @@
   as.numeric(stats::coef(fit, s = "lambda.min")[-1] != 0)
 }
 .class_counts <- function(X, y, nSample, nTimes, seed) {
-  cores <- .sublime_integer(getOption("mc.cores", 1L), "mc.cores")
+  cores <- .subselectR_integer(getOption("mc.cores", 1L), "mc.cores")
   check <- tolower(Sys.getenv("_R_CHECK_LIMIT_CORES_", ""))
   if (nzchar(check) && check != "false") cores <- 1L
   cores <- min(cores, nTimes)
   # Per-fit seeds are generated in the parent, so scheduling does not alter RNG.
   seeds <- sample.int(.Machine$integer.max, nTimes)
   # Undo the per-fit reseeding on exit, so the RNG only advances by the draws above.
-  parent_state <- .sublime_rng_state()
-  on.exit(.sublime_restore_rng(parent_state), add = TRUE)
+  parent_state <- .subselectR_rng_state()
+  on.exit(.subselectR_restore_rng(parent_state), add = TRUE)
   work <- function(i, predictors, y, nSample, seeds) {
     X <- predictors
     set.seed(seeds[i])
@@ -52,7 +52,7 @@
     return(Reduce("+", result))
   } else {
     # All workers attach to the same backing files. Each copies only its sample.
-    prefix <- basename(tempfile("sublime-class-", tmpdir = tempdir()))
+    prefix <- basename(tempfile("subselectR-class-", tmpdir = tempdir()))
     names <- paste0(prefix, c("-X.bin", "-X.desc", "-y.bin", "-y.desc"))
     files <- file.path(tempdir(), names)
     cl <- X_big <- y_big <- NULL
@@ -104,18 +104,18 @@
        rank = rank, aliased_indices = aliased)
 }
 .class_run <- function(X, y, csv, header, nSample, nTimes, k, seed, transform) {
-  data <- .sublime_data(X, y, csv, header)
+  data <- .subselectR_data(X, y, csv, header)
   X <- data$X; y <- data$y
-  nSample <- .sublime_integer(nSample, "nSample")
-  nTimes <- .sublime_integer(nTimes, "nTimes")
-  k <- .sublime_integer(k, "k")
-  seed <- .sublime_seed(seed)
+  nSample <- .subselectR_integer(nSample, "nSample")
+  nTimes <- .subselectR_integer(nTimes, "nTimes")
+  k <- .subselectR_integer(k, "k")
+  seed <- .subselectR_seed(seed)
   if (nSample > nrow(X)) stop("nSample cannot be larger than number of rows in X.")
   if (k > nrow(X)) stop("k cannot be larger than number of rows in X.")
   # A supplied seed applies to this call only; the caller's RNG state is restored.
   if (!is.null(seed)) {
-    caller_state <- .sublime_rng_state()
-    on.exit(.sublime_restore_rng(caller_state), add = TRUE)
+    caller_state <- .subselectR_rng_state()
+    on.exit(.subselectR_restore_rng(caller_state), add = TRUE)
     set.seed(seed)
   }
   if (all(y == y[1])) return(invisible(.class_final(X, y, numeric(ncol(X)), k)))

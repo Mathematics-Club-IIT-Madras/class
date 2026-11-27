@@ -31,7 +31,7 @@
 #' @param k Positive integer giving the number of observations selected by the
 #'   final IBOSS step. It cannot exceed the number of rows in the data.
 #'
-#' @useDynLib sublime, .registration = TRUE
+#' @useDynLib subselectR, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats coef
 #' @importFrom stats lm.fit

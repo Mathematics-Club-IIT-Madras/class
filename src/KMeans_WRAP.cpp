@@ -1,4 +1,4 @@
-#include "sublime_control.h"
+#include "subselectR_control.h"
 // [[Rcpp::depends(RcppEigen)]]
 
 #include <RcppEigen.h>
@@ -15,7 +15,7 @@
 
 // [[Rcpp::export]]
 Rcpp::List kBOSS(Eigen::MatrixXd& X, Eigen::VectorXd& y, Rcpp::NumericVector freqs, int k_iboss) {
-    sublime_data_check(X, y, true);
+    subselectR_data_check(X, y, true);
     if (k_iboss == NA_INTEGER || k_iboss <= 0 || freqs.size() != X.cols()) Rcpp::stop("Invalid k or frequency length.");
     for (double f : freqs) if (!R_FINITE(f) || f < 0) Rcpp::stop("Frequencies must be finite and non-negative.");
 	std::vector<double> freq_count = Rcpp::as<std::vector<double>>(freqs);
@@ -23,7 +23,7 @@ Rcpp::List kBOSS(Eigen::MatrixXd& X, Eigen::VectorXd& y, Rcpp::NumericVector fre
 
 	Eigen::MatrixXd X_reduced(X.rows(), active_vars.size());
 #ifdef _OPENMP
-	#pragma omp parallel for num_threads(sublime_threads())
+	#pragma omp parallel for num_threads(subselectR_threads())
 #endif
 	for(size_t i = 0; i < active_vars.size(); i++) {
 		X_reduced.col(i) = X.col(active_vars[i]);

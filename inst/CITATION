@@ -1,5 +1,5 @@
 bibentry(bibtype = "Manual",
-  title = "sublime: Subdata Selection and Randomized Sketching for Regression",
+  title = "subselectR: Subdata Selection and Randomized Sketching for Regression",
   author = c(person("Aditi", "Vaidya"), person("Anirudh", "Narayanan"),
              person("Anirudh", "Prasanna"), person("Arjun", "Arunachalam"),
              person("Deenabandhan", "N"), person("Mohit", "Rathi")),

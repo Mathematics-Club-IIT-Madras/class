@@ -33,7 +33,7 @@ run_fixed_lasso_class <- function(X, y, n_sample, iterations, seed) {
     counts <- counts + as.numeric(coefficients != 0)
   }
   probabilities <- counts / iterations
-  details <- sublime:::class_active_set_details(probabilities)
+  details <- subselectR:::class_active_set_details(probabilities)
   if (details$empty_cluster || length(details$active_set) == 0L) {
     stop("Fixed CLASS produced an invalid active set.")
   }
@@ -69,7 +69,7 @@ classification_metrics <- function(selected, truth, reference, p = 500L) {
     exact_active_set_recovery = identical(selected, truth),
     false_positive_rate = fp / max(1, p - length(truth)),
     false_negative_rate = fn / max(1, length(truth)),
-    jaccard_to_reference = sublime:::class_jaccard(selected, reference)
+    jaccard_to_reference = subselectR:::class_jaccard(selected, reference)
   )
 }
 
@@ -105,7 +105,7 @@ test_that("CLEAR runs on synthetic multivariate normal data and writes a compari
     test <- make_clear_normal_data(5000L, p, active_count, 2000 + replication)
 
     clear_start <- proc.time()[["elapsed"]]
-    clear <- sublime:::class_early_exit(
+    clear <- subselectR:::class_early_exit(
       train$X, train$y, nSample = n_sample, seed = 3000 + replication,
       min_iter = 20L, check_every = 5L, patience = 3L,
       max_iter = 100L, jaccard_tol = 0.99

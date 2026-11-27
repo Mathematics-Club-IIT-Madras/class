@@ -69,7 +69,7 @@ jobs:
         with:
           needs: check
 
-      - name: Install sublime from source
+      - name: Install subselectR from source
         shell: Rscript {0}
         run: install.packages(".", repos = NULL, type = "source")
 

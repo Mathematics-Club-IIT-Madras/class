@@ -1,13 +1,14 @@
-Package: sublime
+Package: subselectR
 Title: Subdata Selection and Randomized Sketching for Regression
 Version: 0.1.0
 Authors@R: c(
     person("Aditi", "Vaidya",       email = "aditiv2004@googlemail.com", role = c("aut", "cre")),
     person("Anirudh", "Narayanan",  email = "narayanananirudh1@gmail.com", role = "aut"),
     person("Anirudh", "Prasanna",   email = "anirudhp425@gmail.com", role = "aut"),
-    person("Arjun", "Arunachalam",  email = "arjun.conjecture@gmail.com", role = "aut"),
+    person("Arjun", "Arunachalam",  email = " arjunarunachalam2005@gmail.com", role = "aut"),
     person("Deenabandhan", "N",     email = "deenabandhann@gmail.com", role = "aut"),
-    person("Mohit", "Rathi",        email = "mohitrathi2490@gmail.com", role = "aut"))
+    person("Mohit", "Rathi",        email = "mohitrathi2490@gmail.com", role = "aut"),
+    person("Neelesh","Upadhyay",    email = "neelesh@iitm.ac.in", role = "rev" ))              
 Author: Aditi Vaidya [aut, cre], Anirudh Narayanan [aut], Anirudh Prasanna [aut], Arjun Arunachalam [aut], Deenabandhan N [aut], Mohit Rathi [aut]
 Maintainer: Aditi Vaidya <aditiv2004@googlemail.com>
 Description:

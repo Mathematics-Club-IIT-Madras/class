@@ -1,4 +1,4 @@
-#include "sublime_control.h"
+#include "subselectR_control.h"
 #include "HT.h"
 #include <Eigen/Dense>
 #include <vector>
@@ -88,7 +88,7 @@ std::pair<MatrixXd, VectorXd> HT(const MatrixXd& A, const VectorXd& b, std::opti
 
     MatrixXd X_f(n_padded, d);
 #ifdef _OPENMP
-    #pragma omp parallel num_threads(sublime_threads())
+    #pragma omp parallel num_threads(subselectR_threads())
 #endif
     {
 #ifdef _OPENMP

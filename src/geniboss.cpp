@@ -1,4 +1,4 @@
-#include "sublime_control.h"
+#include "subselectR_control.h"
 #include <RcppEigen.h>
 #include <algorithm>
 #include <chrono>
@@ -193,7 +193,7 @@ void geniboss(
     nums.reserve(static_cast<std::size_t>(c));
 
 #ifdef _OPENMP
-    const int max_threads = sublime_threads();
+    const int max_threads = subselectR_threads();
 #else
     const int max_threads = 1;
 #endif
@@ -215,7 +215,7 @@ void geniboss(
     const double* wt_ptr = wt.data();
 
 #ifdef _OPENMP
-    #pragma omp parallel num_threads(sublime_threads()) shared(current_offset, nums, selected, local_max, local_min, scratch, winners_max, winners_min)
+    #pragma omp parallel num_threads(subselectR_threads()) shared(current_offset, nums, selected, local_max, local_min, scratch, winners_max, winners_min)
 #endif
     {
 #ifdef _OPENMP
@@ -298,7 +298,7 @@ void geniboss(
     y_selected.resize(current_offset);
 
 #ifdef _OPENMP
-    #pragma omp parallel for num_threads(sublime_threads()) schedule(static)
+    #pragma omp parallel for num_threads(subselectR_threads()) schedule(static)
 #endif
     for (Index j = 0; j < p; ++j) {
         const double* src = X.col(j).data();
@@ -312,7 +312,7 @@ void geniboss(
     double* y_out = y_selected.data();
 
 #ifdef _OPENMP
-    #pragma omp parallel for num_threads(sublime_threads()) schedule(static)
+    #pragma omp parallel for num_threads(subselectR_threads()) schedule(static)
 #endif
     for (int i = 0; i < current_offset; ++i) {
         y_out[i] = y_ptr[nums[static_cast<std::size_t>(i)]];

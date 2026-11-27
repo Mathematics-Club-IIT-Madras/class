@@ -26,7 +26,7 @@
 //     IEEE Transactions on Systems, Man, and Cybernetics, 9(1), 62-66.
 //
 // License Compatibility:
-//   Original implementation for the sublime package, licensed under GPL-3.
+//   Original implementation for the subselectR package, licensed under GPL-3.
 // -----------------------------------------------------------------------------
 
 #include <vector>

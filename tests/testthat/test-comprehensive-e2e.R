@@ -1,5 +1,5 @@
 # ==============================================================================
-# Comprehensive End-to-End (E2E) Test Suite for `sublime`
+# Comprehensive End-to-End (E2E) Test Suite for `subselectR`
 # 
 # Structure:
 # - Tier 1: Feature Coverage (Category-Partition, >= 5 tests per feature)
@@ -27,7 +27,7 @@
 # ==============================================================================
 
 library(testthat)
-library(sublime)
+library(subselectR)
 
 # ------------------------------------------------------------------------------
 # Helper Fixture Generators (Self-Contained & Deterministic)
@@ -291,9 +291,9 @@ test_that("Tier 1 - F4.2: GenIBOSS includes final_model of class fastglm when ad
 
 test_that("Tier 1 - F5.1: KMeans2 is 100% deterministic across repeated invocations", {
   counts <- c(0, 1, 3, 8, 15, 22, 35, 40)
-  res1 <- sublime:::kmeans2(counts)
-  res2 <- sublime:::kmeans2(counts)
-  res3 <- sublime:::kmeans2(counts)
+  res1 <- subselectR:::kmeans2(counts)
+  res2 <- subselectR:::kmeans2(counts)
+  res3 <- subselectR:::kmeans2(counts)
 
   expect_identical(res1, res2)
   expect_identical(res2, res3)
@@ -302,7 +302,7 @@ test_that("Tier 1 - F5.1: KMeans2 is 100% deterministic across repeated invocati
 
 test_that("Tier 1 - F5.2: KMeans2 returns 0-based indices in strictly ascending order", {
   counts <- c(10, 2, 55, 3, 70, 1, 90, 4)
-  res <- sublime:::kmeans2(counts)
+  res <- subselectR:::kmeans2(counts)
 
   expect_true(length(res) > 0)
   if (length(res) > 1) {
@@ -314,7 +314,7 @@ test_that("Tier 1 - F5.2: KMeans2 returns 0-based indices in strictly ascending 
 
 test_that("Tier 1 - F5.3: KMeans2 selects the higher-mean cluster", {
   counts <- c(1, 2, 3, 20, 25, 30)
-  res <- sublime:::kmeans2(counts)
+  res <- subselectR:::kmeans2(counts)
 
   # Convert 0-based res to 1-based for R indexing
   res_1based <- res + 1L
@@ -346,7 +346,7 @@ test_that("Tier 1 - F5.4: KMeans2 achieves exact global optimality minimizing WC
 
   # Expected 0-based indices of higher cluster
   expected_selected_0based <- sort(sorted_idx[(best_cut + 1):p] - 1L)
-  actual_res <- sublime:::kmeans2(counts)
+  actual_res <- subselectR:::kmeans2(counts)
 
   expect_identical(actual_res, as.integer(expected_selected_0based))
 })
@@ -355,7 +355,7 @@ test_that("Tier 1 - F5.5: KMeans2 correctly separates clear bimodal counts", {
   # 0-indexed positions of high values:
   # index 3 (value 50), index 5 (value 55), index 7 (value 60)
   counts <- c(0, 0, 1, 50, 0, 55, 1, 60)
-  res <- sublime:::kmeans2(counts)
+  res <- subselectR:::kmeans2(counts)
 
   expect_identical(res, c(3L, 5L, 7L))
 })
@@ -658,10 +658,10 @@ test_that("Tier 2 - BVA.2: CLASS handles empty active set (length(active_vars) =
   X <- matrix(rnorm(N * p), N, p)
   y <- rnorm(N, mean = 10, sd = 1)
 
-  kboss_empty <- sublime:::kBOSS(X, y, rep(0, p), 10)
+  kboss_empty <- subselectR:::kBOSS(X, y, rep(0, p), 10)
   expect_equal(length(kboss_empty$selected_vars), 0)
 
-  out <- sublime:::.class_final(X, y, rep(0, p), 10)
+  out <- subselectR:::.class_final(X, y, rep(0, p), 10)
   expect_equal(out$intercept_hat, mean(y))
   expect_equal(out$beta_final, rep(0, p))
   expect_equal(out$mse, mean((y - mean(y))^2))
@@ -732,15 +732,15 @@ test_that("Tier 2 - BVA.7: IBOSS rejects p = 1 predictor column when intercept =
 })
 
 test_that("Tier 2 - BVA.8: KMeans2 handles zero variance in feature counts (all counts identical)", {
-  res_zeros <- sublime:::kmeans2(c(0, 0, 0, 0))
+  res_zeros <- subselectR:::kmeans2(c(0, 0, 0, 0))
   expect_identical(res_zeros, integer(0))
 
-  res_identical <- sublime:::kmeans2(c(5, 5, 5, 5, 5))
+  res_identical <- subselectR:::kmeans2(c(5, 5, 5, 5, 5))
   expect_identical(res_identical, 0:4)
 })
 
 test_that("Tier 2 - BVA.9: KMeans2 handles single feature count (p = 1)", {
-  res_single <- sublime:::kmeans2(c(12.5))
+  res_single <- subselectR:::kmeans2(c(12.5))
   expect_identical(res_single, integer(0))
 })
 

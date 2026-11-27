@@ -1,8 +1,8 @@
-# sublime
+# subselectR
 
 ## Overview
 
-sublime is a library which contains implementations of some sub-data selection and randomized sketching algorithms, providing subroutines for speeding up linear regression, lasso and generalized linear models.
+subselectR is a library which contains implementations of some sub-data selection and randomized sketching algorithms, providing subroutines for speeding up linear regression, lasso and generalized linear models.
 
 These algorithms are:
 - `IBOSS()`: Information-Based Optimal Subdata Selection. Reduces the size of the data matrix by choosing a subset of data, so that the runtime for linear regression is smaller.
@@ -15,20 +15,20 @@ These algorithms are:
 ## Installation
 
 ```r
-install.packages("sublime_0.1.0.tar.gz", repos = NULL, type = "source")
-library(sublime)
+install.packages("subselectR_0.1.0.tar.gz", repos = NULL, type = "source")
+library(subselectR)
 ```
 Alternatively, clone the repository using git clone and run the following commands:
 ```r
 install.packages("/path/to/folder", repos = NULL, type = "source")
-library(sublime)
+library(subselectR)
 ```
 
 ## Usage
 
 All functions accept either a `X`/`y` pair or a `csv` path (in
 which case the last column of the file is treated as the response). Below
-are minimal examples for each exported function. See `vignette("sublime")`
+are minimal examples for each exported function. See `vignette("subselectR")`
 for a more detailed walkthrough.
 
 ### IBOSS()
@@ -37,7 +37,7 @@ Selects a deterministic, information-maximizing subsample for ordinary
 linear regression.
 
 ```r
-library(sublime)
+library(subselectR)
 
 set.seed(42)
 X <- matrix(rnorm(20000 * 5), ncol = 5)
@@ -147,7 +147,7 @@ str(res)
 
 ## Reproducibility and resources
 
-Native routines default to one thread. Set `options(sublime.threads = 2L)`
+Native routines default to one thread. Set `options(subselectR.threads = 2L)`
 to request more; `_R_CHECK_LIMIT_CORES_` forces one. CLASS and HTCLASS use
 one in-process worker by default; `options(mc.cores = 2L)` requests two.
 The native final-selection stage runs after LASSO workers finish.
@@ -168,3 +168,7 @@ CLASS: R. Singh and J. Stufken, “Subdata selection with a large number of vari
 England Journal of Statistics in Data Science, vol. 1, no. 3, pp. 426–438, 2023. https://doi.org/10.51387/23-NEJSDS36
 
 SRHT: J. A. Tropp, "Improved analysis of the subsampled randomized Hadamard transform," Adv. Adapt. Data Anal., vol. 3, no. 1–2, pp. 115–126, 2011. https://doi.org/10.1142/S1793536911000787
+
+## Acknowledgements
+
+We thank Prof. Rakhi Singh for proposing the original idea for this package and for her guidance. We also thank the members of the Mathematics Club, IITM for its continued support.

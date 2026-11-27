@@ -169,6 +169,13 @@ England Journal of Statistics in Data Science, vol. 1, no. 3, pp. 426–438, 202
 
 SRHT: J. A. Tropp, "Improved analysis of the subsampled randomized Hadamard transform," Adv. Adapt. Data Anal., vol. 3, no. 1–2, pp. 115–126, 2011. https://doi.org/10.1142/S1793536911000787
 
+## Table benchmarks
+
+The manually triggered **Table Benchmarking** GitHub workflow supports Tables
+2–6. Tables 3–6 include small smoke runs and save raw results, summary tables,
+and run settings. See [benchmark instructions](tests/performance/README.md)
+for table configurations, metric definitions, and local commands.
+
 ## Acknowledgements
 
 We thank Prof. Rakhi Singh for proposing the original idea for this package and for her guidance. We also thank the members of the Mathematics Club, IITM for its continued support.

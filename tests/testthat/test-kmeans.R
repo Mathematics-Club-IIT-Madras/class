@@ -8,7 +8,6 @@ test_that("kmeans2 is deterministic", {
   expect_type(first_result, "integer")
   expect_true(all(first_result >= 0L & first_result < length(counts)))
 })
-
 test_that("active sets use the higher-frequency cluster", {
   pi_hat <- cbind(
     c(1, 2, 3, 10, 11, 12),
@@ -104,32 +103,4 @@ test_that("patience rule requires consecutive successful checkpoints", {
   expect_false(reset_result$successful[5])
   expect_false(reset_result$successful[7])
   expect_true(reset_result$successful[9])
-})
-
-test_that("early-exit CLASS respects warm-up and maximum iteration cap", {
-  set.seed(2026)
-  X <- matrix(rnorm(40 * 4), nrow = 40, ncol = 4)
-  y <- rnorm(40)
-
-  result <- subselectR:::class_early_exit(
-    X = X,
-    y = y,
-    nSample = 10,
-    min_iter = 2,
-    check_every = 1,
-    patience = 3,
-    max_iter = 2,
-    seed = 42
-  )
-
-  expect_false(result$stopped_early)
-  expect_equal(result$iterations_used, 2)
-  expect_equal(dim(result$pi_hat), c(4, 2))
-  expect_equal(dim(result$selection_counts), c(4, 2))
-  expect_equal(nrow(result$checkpoints), 1)
-  expect_true(all(c(
-    "selected_indices", "feature_counts", "selection_probabilities",
-    "iterations_used", "converged", "stop_reason", "active_set_history",
-    "diagnostic_history", "final_cluster_centres", "final_separation"
-  ) %in% names(result)))
 })

@@ -27,10 +27,7 @@ Windows 11 x64, R 4.5.2, Rtools45 / GCC 14.3.0.
 * Explicit two-worker Windows runs matched serial results, including HTCLASS.
   Forced worker failures left no extra open connections or registered backend.
 * Final routine suite: 502 passing assertions, zero failures and errors.
-  Two small-fold glmnet warnings come from the unchanged early-exit test.
 * Routine research/benchmark tests remain opt-in or skipped on CRAN.
-  Early-exit bookkeeping (completed iteration tracking, selection count and probability column alignment)
-  and fitted intercept return have been hardened and verified with regression tests.
 
 Logs and test results are retained locally under `verification/` (excluded
 from the source archive and Git). Final archive/check: the pre-rename source archive and

@@ -1,9 +1,9 @@
-## Release status (23 November 2026)
+## Release status (27 November 2026)
 
-Not ready for submission: CRAN's incoming check reports that the name
-`sublime` is already associated with an archived package (version 1.3).
-Choose an available new name, or resolve ownership with CRAN before submitting.
-Do not merely increase this unrelated package's version to bypass that check.
+The package has been renamed to `subselectR`. Name availability and a fresh
+check of the renamed package are still required before submission.
+The verification results below describe the package before the rename;
+they do not establish the release status of `subselectR`.
 
 The retained final-release archive/check below predates the restoration of
 shared bigmemory backing files for Windows workers. Rebuild and recheck the
@@ -33,15 +33,15 @@ Windows 11 x64, R 4.5.2, Rtools45 / GCC 14.3.0.
   and fitted intercept return have been hardened and verified with regression tests.
 
 Logs and test results are retained locally under `verification/` (excluded
-from the source archive and Git). Final archive/check: `final-release/sublime_0.1.0.tar.gz` and
-`final-release/sublime.Rcheck/00check.log`; archive hash and payload audit:
+from the source archive and Git). Final archive/check: the pre-rename source archive and
+its check log; archive hash and payload audit:
 `final-release/archive-audit.json`. Additional logs:
 `build.log`, `install.log`, `tests.log`, `test-parallel.log`,
 `no-openmp-install.log`, and `no-openmp.log`.
 
 ## Remaining release gates
 
-* Resolve the package name, update registration and references, then rebuild
+* Verify availability of the new package name, then rebuild
   and recheck the renamed archive.
 * Run the added GitHub Actions matrix on Linux, macOS, Windows and R-devel;
   the workflow also includes a no-OpenMP configuration and explicit parallel

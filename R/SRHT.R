@@ -66,18 +66,18 @@
 #' 38(4), 1454--1485.
 #' \doi{10.1137/17M1111590}
 #'
-#' @useDynLib sublime, .registration = TRUE
+#' @useDynLib subselectR, .registration = TRUE
 #' @import Rcpp
 #' @importFrom data.table fread
 #' @export
 SRHT <- function(X = NULL, y = NULL, csv = NULL, k, intercept = FALSE, header = FALSE, seed = NULL) {
 
-  .sublime_flag(intercept, "intercept")
-  seed <- .sublime_seed(seed)
-  data <- .sublime_data(X, y, csv, header)
+  .subselectR_flag(intercept, "intercept")
+  seed <- .subselectR_seed(seed)
+  data <- .subselectR_data(X, y, csv, header)
   X <- data$X; y <- data$y
 
-  k <- .sublime_integer(k, "k", 0)
+  k <- .subselectR_integer(k, "k", 0)
 
   if (k == 0) {
     p_cols <- if (intercept && !all(abs(X[, 1] - 1) < 1e-9)) ncol(X) + 1L else ncol(X)

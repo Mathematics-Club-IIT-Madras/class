@@ -48,8 +48,8 @@ jobs:
       - name: Exercise real parallel branch
         shell: Rscript {0}
         env:
-          RUN_SUBLIME_PARALLEL_TESTS: 'true'
+          RUN_subselectR_PARALLEL_TESTS: 'true'
         run: |
           install.packages(".", repos = NULL, type = "source")
-          library(sublime)
-          testthat::test_file("tests/testthat/test-parallel.R", package = "sublime")
+          library(subselectR)
+          testthat::test_file("tests/testthat/test-parallel.R", package = "subselectR")

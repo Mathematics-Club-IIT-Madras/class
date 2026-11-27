@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // HT_cpp
 Rcpp::List HT_cpp(Eigen::MatrixXd X, Eigen::VectorXd y, SEXP seed);
-RcppExport SEXP _sublime_HT_cpp(SEXP XSEXP, SEXP ySEXP, SEXP seedSEXP) {
+RcppExport SEXP _subselectR_HT_cpp(SEXP XSEXP, SEXP ySEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,7 +26,7 @@ END_RCPP
 }
 // iboss_cpp
 Rcpp::List iboss_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y, int k, bool intercept, bool add_logs);
-RcppExport SEXP _sublime_iboss_cpp(SEXP XSEXP, SEXP ySEXP, SEXP kSEXP, SEXP interceptSEXP, SEXP add_logsSEXP) {
+RcppExport SEXP _subselectR_iboss_cpp(SEXP XSEXP, SEXP ySEXP, SEXP kSEXP, SEXP interceptSEXP, SEXP add_logsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -41,7 +41,7 @@ END_RCPP
 }
 // kBOSS
 Rcpp::List kBOSS(Eigen::MatrixXd& X, Eigen::VectorXd& y, Rcpp::NumericVector freqs, int k_iboss);
-RcppExport SEXP _sublime_kBOSS(SEXP XSEXP, SEXP ySEXP, SEXP freqsSEXP, SEXP k_ibossSEXP) {
+RcppExport SEXP _subselectR_kBOSS(SEXP XSEXP, SEXP ySEXP, SEXP freqsSEXP, SEXP k_ibossSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -55,7 +55,7 @@ END_RCPP
 }
 // kmeans2
 Rcpp::IntegerVector kmeans2(Rcpp::NumericVector& freq_count);
-RcppExport SEXP _sublime_kmeans2(SEXP freq_countSEXP) {
+RcppExport SEXP _subselectR_kmeans2(SEXP freq_countSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +66,7 @@ END_RCPP
 }
 // SRHT_cpp
 Rcpp::List SRHT_cpp(Eigen::MatrixXd X, Eigen::VectorXd y, int r, SEXP seed);
-RcppExport SEXP _sublime_SRHT_cpp(SEXP XSEXP, SEXP ySEXP, SEXP rSEXP, SEXP seedSEXP) {
+RcppExport SEXP _subselectR_SRHT_cpp(SEXP XSEXP, SEXP ySEXP, SEXP rSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,7 +80,7 @@ END_RCPP
 }
 // geniboss_cpp
 Rcpp::List geniboss_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y, const Eigen::VectorXd& wt, int r);
-RcppExport SEXP _sublime_geniboss_cpp(SEXP XSEXP, SEXP ySEXP, SEXP wtSEXP, SEXP rSEXP) {
+RcppExport SEXP _subselectR_geniboss_cpp(SEXP XSEXP, SEXP ySEXP, SEXP wtSEXP, SEXP rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -94,16 +94,16 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_sublime_HT_cpp", (DL_FUNC) &_sublime_HT_cpp, 3},
-    {"_sublime_iboss_cpp", (DL_FUNC) &_sublime_iboss_cpp, 5},
-    {"_sublime_kBOSS", (DL_FUNC) &_sublime_kBOSS, 4},
-    {"_sublime_kmeans2", (DL_FUNC) &_sublime_kmeans2, 1},
-    {"_sublime_SRHT_cpp", (DL_FUNC) &_sublime_SRHT_cpp, 4},
-    {"_sublime_geniboss_cpp", (DL_FUNC) &_sublime_geniboss_cpp, 4},
+    {"_subselectR_HT_cpp", (DL_FUNC) &_subselectR_HT_cpp, 3},
+    {"_subselectR_iboss_cpp", (DL_FUNC) &_subselectR_iboss_cpp, 5},
+    {"_subselectR_kBOSS", (DL_FUNC) &_subselectR_kBOSS, 4},
+    {"_subselectR_kmeans2", (DL_FUNC) &_subselectR_kmeans2, 1},
+    {"_subselectR_SRHT_cpp", (DL_FUNC) &_subselectR_SRHT_cpp, 4},
+    {"_subselectR_geniboss_cpp", (DL_FUNC) &_subselectR_geniboss_cpp, 4},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_sublime(DllInfo *dll) {
+RcppExport void R_init_subselectR(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

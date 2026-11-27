@@ -1,4 +1,4 @@
-# sublime 0.1.0
+# subselectR 0.1.0
 
 * Initial release candidate; submission checks are recorded in cran-comments.md.
 * Provides subdata selection algorithms for big data linear and non-linear regression:

@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(sublime)
+library(subselectR)
 
-test_check("sublime")
+test_check("subselectR")

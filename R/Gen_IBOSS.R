@@ -37,7 +37,7 @@
 #'
 #' @param add_logs Logical indicating whether model fit is to be returned
 #'
-#' @useDynLib sublime, .registration = TRUE
+#' @useDynLib subselectR, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #' @import fastglm
 #'
@@ -117,7 +117,7 @@
 #'
 #' coef(fit$final_model)
 GenIBOSS <- function(X = NULL, y = NULL, csv = NULL, nSample=-1, k=-1, family, intercept = FALSE, header = FALSE, add_logs = FALSE) {
-  .sublime_flag(add_logs, "add_logs")
+  .subselectR_flag(add_logs, "add_logs")
 
   if (identical(nSample, -1) || identical(nSample, -1L)) {
     stop("Check input GenIBOSS(..., nSample = (pos int), ...")

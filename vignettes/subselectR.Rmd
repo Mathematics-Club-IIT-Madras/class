@@ -1,0 +1,370 @@
+---
+title: "Getting Started with subselectR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with subselectR}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 4
+)
+```
+
+## Introduction
+
+`subselectR` implements some sub-data selection and randomized sketching
+methods for speeding up linear regression, feature selection and
+generalized linear models on large datasets. Rather than fitting a model
+on all $N$ observations, each method constructs a smaller subset of size
+$k \ll N$ and fits the model on that subset instead, reducing the
+computational cost.
+
+The package provides six functions:
+
+| Function | Model | Idea |
+|----------------|-----------------|----------------------------------------|
+| `IBOSS()` | Linear regression | Deterministically pick rows with extreme covariate values |
+| `GenIBOSS()` | GLMs (Logistic, Poisson, …) | IBOSS applied to an information-weighted design |
+| `HT()` | Transformation | Randomized padded Hadamard transform |
+| `SRHT()` | Linear regression | Randomized Hadamard sketch, then subsample |
+| `CLASS()` | Lasso | Repeated subsampled Lasso + IBOSS to select variables and rows |
+| `HTCLASS()` | Lasso | `CLASS()` on a Hadamard-transformed matrix |
+
+This vignette walks through each function with a small example.
+
+```{r}
+library(subselectR)
+```
+
+## IBOSS: Information-Based Optimal Subdata Selection
+
+`IBOSS()` is an algorithm for ordinary linear regression on very large
+$N$. It selects the $k$ rows of $X$ that maximize a determinant of the
+Fisher information matrix, by repeatedly picking observations with
+extreme values in each predictor.
+
+```{r}
+set.seed(42)
+n <- 20000
+p <- 5
+
+X <- matrix(rnorm(n * p), ncol = p)
+beta <- c(2, -1, 0.5, 3, -2)
+y <- as.numeric(X %*% beta + rnorm(n))
+
+res <- IBOSS(X = X, y = y, k = 500)
+
+fit <- lm(res$y_selected ~ res$X_selected)
+coef(fit)
+```
+
+`IBOSS()` can also be pointed at a CSV file directly, with the last
+column treated as the response:
+
+``` r
+res <- IBOSS(csv = "mydata.csv", k = 500, header = TRUE)
+```
+
+If `intercept = TRUE`, the first column of `X` is treated as the
+intercept term and excluded from the row-selection criterion. However,
+it will be included in the subdata that is returned.
+
+## GenIBOSS: IBOSS for Nonlinear Models
+
+`GenIBOSS()` first fits the model on a small pilot subsample of size
+`nSample`, using the result to build an information-weighted design, and
+then running IBOSS-like selection on that weighted design.
+
+```{r}
+set.seed(42)
+n <- 20000
+p <- 4
+
+X <- matrix(rnorm(n * p), ncol = p)
+beta <- c(1, -1, 0.5, 2)
+eta <- as.numeric(X %*% beta)
+prob <- 1 / (1 + exp(-eta))
+y <- rbinom(n, 1, prob)
+
+fit <- GenIBOSS(
+  X = X,
+  y = y,
+  nSample = 500,
+  k = 1000,
+  family = binomial(),
+  add_logs = TRUE
+)
+
+coef(fit$final_model)
+```
+
+With `add_logs = TRUE`, `GenIBOSS()` also fits a final `fastglm` model
+on the selected subdata and returns it as `final_model`; with
+`add_logs = FALSE` (the default) it returns only the selected
+`X_selected` / `y_selected`, leaving the final fit to the user.
+
+Any standard `family` object works, as long as it defines `linkinv`,
+`mu.eta`, and `variance` — e.g. `gaussian()`, `binomial()`, `poisson()`.
+
+## HT: Randomized Walsh-Hadamard Transform
+
+`HT()` applies a randomized Walsh-Hadamard transform to the predictors
+`X` and response `y`. It pads the data rows up to the next power of two,
+multiplies each observation by an independent random sign $\pm 1$, and
+applies the Fast Walsh-Hadamard Transform (FWHT). This preconditioning
+step equalizes leverage scores across observations.
+
+```{r}
+set.seed(42)
+n <- 1000
+p <- 4
+
+X <- matrix(rnorm(n * p), ncol = p)
+y <- as.numeric(X %*% c(1.5, -2, 0.5, 1) + rnorm(n))
+
+ht_res <- HT(X = X, y = y, seed = 42)
+dim(ht_res$X_f)
+length(ht_res$y_f)
+```
+
+## SRHT: Subsampled Randomized Hadamard Transform
+
+`SRHT()` is a randomized sketching alternative to IBOSS. It first
+applies a random Hadamard-based rotation to the whole design (which
+tends to equalize leverage scores across rows), and then draws a uniform
+subsample of size `k` from the transformed data. This reduces the
+computational cost for linear regression on the result.
+
+```{r}
+set.seed(42)
+n <- 20000
+p <- 5
+
+X <- matrix(rnorm(n * p), ncol = p)
+beta <- c(2, -1, 0.5, 3, -2)
+y <- as.numeric(X %*% beta + rnorm(n))
+
+res <- SRHT(X = X, y = y, k = 2000, intercept = TRUE)
+str(res)
+```
+
+If `intercept = TRUE` and the first column of `X` is not already a
+column of ones, `SRHT()` prepends one before sketching.
+
+## CLASS: Combined Lasso And Subdata Selection
+
+`CLASS()` targets datasets with a large number of features, where
+variable selection (via Lasso) is itself expensive on the full data. It
+repeatedly draws small uniform subsamples of size `nSample`, fits Lasso
+on each via `glmnet::cv.glmnet()`, and counts how often each variable is
+selected across `nTimes` repetitions. K-Means clustering is done on the
+resultant frequencies, with k=2. The variables corresponding to the
+higher mean are chosen, the rest are discarded. We then perform IBOSS on
+the resultant dataset, after which linear regression is performed on the
+sub-data.
+
+```{r}
+set.seed(42)
+n <- 50000
+p <- 50
+
+X <- matrix(rnorm(n * p), ncol = p)
+beta <- c(rep(2, 5), rep(0, p - 5))
+y <- as.numeric(X %*% beta + rnorm(n))
+
+res <- CLASS(
+  X = X,
+  y = y,
+  nSample = 1000,
+  nTimes = 50, 
+  k = 2000
+)
+
+#The originial algorithm uses an nTimes of 100. We use a smaller nTimes
+#here for illustrative purposes.
+
+res$selected_indices  # active variables
+res$beta_final         # full-length coefficient vector (zeros for excluded vars)
+res$mse
+res$r_squared
+```
+
+`CLASS()` returns a list containing the selected subdata (`X_f`, `y_f`),
+the fitted intercept and coefficients, the indices of the variables
+selected as active, the raw selection frequency counts, and in-sample
+MSE / $R^2$ computed on the full dataset using the final coefficients.
+
+## HTCLASS: CLASS + Hadamard Transform
+
+`HTCLASS()` follows the same procedure as `CLASS()`, but first applies a
+Hadamard transform (`HT()`) to `X` and `y` before running the subsampled
+Lasso stage. Preconditioning with a Hadamard matrix spreads out
+leverage/influence across rows, which can improve accuracy relative to
+plain `CLASS()` on datasets where a few rows dominate the OLS fit.
+
+```{r}
+res <- HTCLASS(
+  X = X,
+  y = y,
+  nSample = 1000,
+  nTimes = 50,
+  k = 2000
+)
+
+res$beta_final
+res$mse
+```
+
+The return value has the same structure as `CLASS()`.
+
+## Additional Information
+
+### IBOSS
+
+**Inputs**
+
+| Argument | Type | Default / requirement | Description |
+|------------------|------------------|------------------|------------------|
+| `X` | Numeric matrix | Required for matrix mode | Data |
+| `y` | Numeric vector | Required for matrix mode | Response |
+| `k` | Positive integer | Required; default not stated | Subsample size |
+| `csv` | Character path | Alternative input mode | Whether CSV file; if yes, name. |
+| `header` | Logical | Example: `TRUE`; default not stated | CSV header flag |
+| `intercept` | Logical | Default not stated | Whether data includes intercept column |
+
+**Output:** `X_selected`, `y_selected` (selected predictor rows and
+responses; inspect `str()` for other fields).
+
+**Methodology:** Selects observations using extreme values across
+features.
+
+**Assumptions:** Linear model. Scale and outliers can influence
+selection. Note that IBOSS gives the best representative of the existing
+data and doesn't remove outliers on its own.
+
+### GenIBOSS
+
+**Inputs**
+
+| Argument | Type | Default / Required | Description |
+|------------------|------------------|------------------|------------------|
+| `X` | Numeric matrix | Required | Data |
+| `y` | Response vector | Required | Response |
+| `nSample` | Positive integer | Required | Subsample size |
+| `k` | Positive integer | Required | Subdata size |
+| `family` | GLM family object | Example: `binomial()` | Family must define `linkinv`, `mu.eta`, and `variance`. |
+| `add_logs` | Boolean | `FALSE` | Whether to fit a final `fastglm` model on selected data. |
+
+**Output:** With `add_logs = FALSE`, selected `X_selected`/`y_selected`;
+with `TRUE`, also `final_model` (example accesses
+`coef(fit$final_model)`).
+
+**Algorithm:** Fits a GLM on a small subsample, then performs IBOSS-like
+selection. An optional final GLM is fitted to the selected observations.
+
+**Assumptions:** Generalized linear model relation between data and
+output.
+
+### HT
+
+**Inputs**
+
+| Argument | Type           | Default / requirement | Description        |
+|----------|----------------|-----------------------|--------------------|
+| `X`      | Numeric matrix | Required              | Data               |
+| `y`      | Numeric vector | Required              | Response           |
+| `seed`   | Integer        | Example: `42`         | Randomization seed |
+
+**Output:** The example inspects `X_f` and `y_f`, transformed predictors
+and response; check dimensions. Rows may include padding and are not
+original selected records.
+
+**Algorithm:** Pads row count to a power of two, then applies Hadamard
+Transform. This is intended to average out information among the rows
+and enable random subsampling.
+
+### SRHT
+
+**Inputs**
+
+| Argument | Type | Default / requirement | Description |
+|------------------|------------------|------------------|------------------|
+| `X` | Numeric matrix | Required | Data |
+| `y` | Numeric vector | Required | Response |
+| `k` | Positive integer | Required in example; default not stated | Subdata size |
+| `intercept` | Logical | Example: `TRUE`; default not stated | Whether intercept column exists in data |
+
+**Output:** Required subsample.
+
+**Algorithm:** Randomized Hadamard rotation is applied to the data,
+followed by uniform subsampling of `k` rows.
+
+### CLASS
+
+**Inputs**
+
+| Argument  | Type             | Default / requirement |
+|-----------|------------------|-----------------------|
+| `X`       | Numeric matrix   | Required              |
+| `y`       | Numeric vector   | Required              |
+| `nSample` | Positive integer | Example: `1000`       |
+| `nTimes`  | Positive integer | Example: `50`         |
+| `k`       | Positive integer | Example: `2000`       |
+
+**Output:** `X_f`, `y_f`, fitted intercept/coefficients, `beta_final`
+(full-length, zeros for excluded variables), `selected_indices`, raw
+selection-frequency counts, `mse`, and `r_squared`. As stated above, MSE
+and R-squared are computed in-sample on the full data using final
+coefficients.
+
+**Algorithm:** Repeatedly draws uniform subsamples and fits
+`glmnet::cv.glmnet()`, maintaining cumulative feature-selection
+frequencies. K-means (`k = 2`) groups the frequencies and the
+higher-mean group is retained on which IBOSS subdata selection is done.
+
+### HTCLASS
+
+**Inputs**
+
+| Argument  | Type             | Default / requirement |
+|-----------|------------------|-----------------------|
+| `X`       | Numeric matrix   | Required              |
+| `y`       | Numeric vector   | Required              |
+| `nSample` | Positive integer | Example: `1000`       |
+| `nTimes`  | Positive integer | Example: `50`         |
+| `k`       | Positive integer | Example: `2000`       |
+
+**Output:** Same return structure as `CLASS()` according to the
+vignette; it includes final coefficients and metrics, and CLASS-like
+selection fields. Verify names with `str()`.
+
+**Algorithm:** Applies HT to the predictors and response first, then
+performs CLASS.
+
+## References
+
+IBOSS: H. Wang, M. Yang, and J. Stufken, "Information-based optimal
+subdata selection for big data linear regression," *Journal of the
+American Statistical Association*, vol. 114, no. 525, pp. 393-405, 2019.
+<https://doi.org/10.1080/01621459.2017.1408468>
+
+GenIBOSS: J. Yu, J. Liu, and H. Wang, "Information-based optimal subdata
+selection for non-linear models," *Statistical Papers*, vol. 64, no. 4,
+pp. 1069-1093, Aug. 2023. <https://doi.org/10.1007/s00362-023-01430-3>
+
+CLASS: R. Singh and J. Stufken, "Subdata selection with a large number
+of variables," *The New England Journal of Statistics in Data Science*,
+vol. 1, no. 3, pp. 426-438, 2023. <https://doi.org/10.51387/23-NEJSDS36>
+
+SRHT: J. A. Tropp, "Improved analysis of the subsampled randomized
+Hadamard transform," *Adv. Adapt. Data Anal.*, vol. 3, no. 1-2, pp.
+115-126, 2011. <https://doi.org/10.1142/S1793536911000787>

@@ -24,7 +24,7 @@
 #' @param add_logs Logical; indicating whether model fit is to be returned.
 #'   Defaults to `FALSE`.
 #'
-#' @useDynLib sublime, .registration = TRUE
+#' @useDynLib subselectR, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 #' @details
@@ -104,7 +104,7 @@ IBOSS <- function(
     header = FALSE,
     add_logs = FALSE) {
 
-  .sublime_flag(add_logs, "add_logs")
+  .subselectR_flag(add_logs, "add_logs")
 
   if (!is.logical(intercept) || length(intercept) != 1L || is.na(intercept)) {
     stop("intercept must be a single TRUE/FALSE value.")

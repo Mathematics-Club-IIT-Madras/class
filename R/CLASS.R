@@ -138,7 +138,7 @@
 #' Mathematics Club, IIT Madras
 #'
 #' @export
-#' @useDynLib sublime, .registration = TRUE
+#' @useDynLib subselectR, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats coef
 #' @importFrom stats lm.fit

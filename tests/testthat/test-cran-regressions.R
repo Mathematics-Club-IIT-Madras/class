@@ -16,21 +16,21 @@ test_that("CLASS variants validate before constant-response shortcuts", {
 })
 test_that("native boundaries reject invalid dimensions and values", {
   X <- matrix(seq_len(30), 10, 3); y <- seq_len(10)
-  expect_error(sublime:::HT_cpp(X, y[-1]))
-  expect_error(sublime:::SRHT_cpp(X, y, -1L))
-  expect_error(sublime:::SRHT_cpp(X, y, 3L, 1.5))
-  expect_error(sublime:::iboss_cpp(X, y[-1], 3L, FALSE, FALSE))
-  expect_error(sublime:::geniboss_cpp(X, y, rep(1, 9), 3L))
-  expect_error(sublime:::kBOSS(X, y, c(1, 2), 3L))
-  expect_error(sublime:::kmeans2(c(1, NA_real_)))
-  expect_equal(sublime:::kmeans2(c(10, 0, 0)), 0L)
-  expect_equal(sublime:::kBOSS(X, y, c(10, 0, 0), 3L)$selected_vars, 0L)
+  expect_error(subselectR:::HT_cpp(X, y[-1]))
+  expect_error(subselectR:::SRHT_cpp(X, y, -1L))
+  expect_error(subselectR:::SRHT_cpp(X, y, 3L, 1.5))
+  expect_error(subselectR:::iboss_cpp(X, y[-1], 3L, FALSE, FALSE))
+  expect_error(subselectR:::geniboss_cpp(X, y, rep(1, 9), 3L))
+  expect_error(subselectR:::kBOSS(X, y, c(1, 2), 3L))
+  expect_error(subselectR:::kmeans2(c(1, NA_real_)))
+  expect_equal(subselectR:::kmeans2(c(10, 0, 0)), 0L)
+  expect_equal(subselectR:::kBOSS(X, y, c(10, 0, 0), 3L)$selected_vars, 0L)
 })
 test_that("rank deficient final fit preserves predictions and reports aliases", {
   x <- seq(-2, 2, length.out = 30)
   X <- cbind(x, x, rev(x)^2)
   y <- 7 + 3*x
-  out <- sublime:::.class_final(X, y, c(10, 10, 0), 20)
+  out <- subselectR:::.class_final(X, y, c(10, 10, 0), 20)
   expect_equal(as.numeric(out$intercept_hat + X %*% out$beta_final), y, tolerance = 1e-10)
   expect_equal(out$rank, 2L)
   expect_length(out$aliased_indices, 1L)
@@ -50,10 +50,10 @@ test_that("transforms and full pipelines reproduce explicit seeds", {
 })
 test_that("IBOSS returns the requested fit and threads preserve ties", {
   X <- cbind(rep(1:5, each = 4), seq_len(20)); y <- 5 + 2*X[,2]
-  old <- options(sublime.threads = 1L); on.exit(options(old))
+  old <- options(subselectR.threads = 1L); on.exit(options(old))
   a <- IBOSS(X, y, k = 10, add_logs = TRUE)
   expect_equal(as.numeric(cbind(1, a$X_selected) %*% a$final_model$coefficients), a$y_selected)
-  options(sublime.threads = 2L)
+  options(subselectR.threads = 2L)
   expect_identical(IBOSS(X, y, k = 10)$X_selected, a$X_selected)
 })
 
@@ -85,7 +85,7 @@ test_that("CLASS variants leave the caller's random number stream intact", {
     set.seed(5)
     testthat::with_mocked_bindings(
       fun(X, y, nSample = 30, nTimes = 2, k = 20),
-      .class_lasso = function(X, y) numeric(ncol(X)), .package = "sublime")
+      .class_lasso = function(X, y) numeric(ncol(X)), .package = "subselectR")
     expect_identical(runif(3), a)
   }
 })
@@ -96,7 +96,7 @@ test_that("CLASS variants keep predictors that are selected equally often", {
   for (fun in list(CLASS, HTCLASS)) {
     out <- testthat::with_mocked_bindings(
       fun(X, y, nSample = 50, nTimes = 3, k = 40, seed = 1),
-      .class_lasso = function(X, y) c(1, 1), .package = "sublime")
+      .class_lasso = function(X, y) c(1, 1), .package = "subselectR")
     expect_identical(sort(out$selected_indices), 1:2)
     expect_true(all(out$beta_final != 0))
   }
@@ -119,11 +119,11 @@ test_that("CLASS performs exactly nTimes fits in the serial path", {
   calls <- 0L
   old <- options(mc.cores = 1L); on.exit(options(old))
   counts <- testthat::with_mocked_bindings(
-    sublime:::.class_counts(X, y, 40L, 3L, NULL),
+    subselectR:::.class_counts(X, y, 40L, 3L, NULL),
     .class_lasso = function(...) {
       calls <<- calls + 1L
       c(1, 0, 1, 0)
-    }, .package = "sublime")
+    }, .package = "subselectR")
   expect_identical(calls, 3L)
   expect_equal(counts, c(3, 0, 3, 0))
 })
@@ -133,7 +133,7 @@ test_that("public CLASS variants return mean-response fits for an empty active s
   for (fun in list(CLASS, HTCLASS)) {
     out <- testthat::with_mocked_bindings(
       fun(X,y,nSample=30,nTimes=2,k=20,seed=9),
-      .class_counts = function(X, ...) numeric(ncol(X)), .package = "sublime")
+      .class_counts = function(X, ...) numeric(ncol(X)), .package = "subselectR")
     expect_equal(out$intercept_hat, mean(y))
     expect_equal(out$beta_final, numeric(4))
     expect_length(out$selected_indices, 0L)
@@ -152,7 +152,7 @@ test_that("early exit handles failed fits without corrupting history and returns
   orig_cv <- glmnet::cv.glmnet
   calls <- 0L
   out <- testthat::with_mocked_bindings(
-    sublime:::class_early_exit(
+    subselectR:::class_early_exit(
       X = X, y = y, nSample = 35, min_iter = 2, check_every = 1,
       patience = 2, max_iter = 5, max_fit_failures = 3, seed = 123
     ),

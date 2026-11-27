@@ -37,15 +37,15 @@
 #' dim(res$X_f)
 #' length(res$y_f)
 #'
-#' @useDynLib sublime, .registration = TRUE
+#' @useDynLib subselectR, .registration = TRUE
 #' @import Rcpp
 #' @importFrom data.table fread
 #' @export
 HT <- function(X = NULL, y = NULL, csv = NULL, intercept = FALSE, header = FALSE, seed = NULL) {
 
-  .sublime_flag(intercept, "intercept")
-  seed <- .sublime_seed(seed)
-  data <- .sublime_data(X, y, csv, header)
+  .subselectR_flag(intercept, "intercept")
+  seed <- .subselectR_seed(seed)
+  data <- .subselectR_data(X, y, csv, header)
   X <- data$X; y <- data$y
 
   if (intercept) {

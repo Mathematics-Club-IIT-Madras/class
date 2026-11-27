@@ -2,26 +2,26 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 HT_cpp <- function(X, y, seed = NULL) {
-    .Call(`_sublime_HT_cpp`, X, y, seed)
+    .Call(`_subselectR_HT_cpp`, X, y, seed)
 }
 
 iboss_cpp <- function(X, y, k, intercept, add_logs) {
-    .Call(`_sublime_iboss_cpp`, X, y, k, intercept, add_logs)
+    .Call(`_subselectR_iboss_cpp`, X, y, k, intercept, add_logs)
 }
 
 kBOSS <- function(X, y, freqs, k_iboss) {
-    .Call(`_sublime_kBOSS`, X, y, freqs, k_iboss)
+    .Call(`_subselectR_kBOSS`, X, y, freqs, k_iboss)
 }
 
 kmeans2 <- function(freq_count) {
-    .Call(`_sublime_kmeans2`, freq_count)
+    .Call(`_subselectR_kmeans2`, freq_count)
 }
 
 SRHT_cpp <- function(X, y, r, seed = NULL) {
-    .Call(`_sublime_SRHT_cpp`, X, y, r, seed)
+    .Call(`_subselectR_SRHT_cpp`, X, y, r, seed)
 }
 
 geniboss_cpp <- function(X, y, wt, r) {
-    .Call(`_sublime_geniboss_cpp`, X, y, wt, r)
+    .Call(`_subselectR_geniboss_cpp`, X, y, wt, r)
 }
 

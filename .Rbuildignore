@@ -10,7 +10,7 @@
 ^\.git$
 ^\.gitignore$
 ^\.Rhistory$
-^sublime_.*\.tar\.gz$
+^subselectR_.*\.tar\.gz$
 ^.*\.bin$
 ^.*\.desc$
 

@@ -171,4 +171,4 @@ SRHT: J. A. Tropp, "Improved analysis of the subsampled randomized Hadamard tran
 
 ## Acknowledgements
 
-We thank Prof. Rakhi Singh for proposing the original idea for this package and for her guidance. We also thank the members of the Mathematics Club, IITM for its continued support.
+We thank Prof. Rakhi Singh for proposing the original idea for this package and for her guidance. We also thank the members of the Mathematics Club, IITM for their continued support.

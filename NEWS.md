@@ -14,7 +14,5 @@
 * Share rank-aware and intercept-only final fits between CLASS and HTCLASS.
 * Implement IBOSS add_logs; validate GenIBOSS pilots and reuse intercepts.
 * Correct help, metadata and API inventory; add regression coverage.
-* Early-exit algorithm remains unchanged and outside this revision.
-
 * Windows parallel CLASS variants share bigmemory backing files, with cleanup
   on success and error; only sampled rows are copied for each fit.

@@ -45,11 +45,3 @@ jobs:
           args: 'c("--as-cran", "--no-manual")'
           build_args: 'c("--no-manual")'
           error-on: '"warning"'
-      - name: Exercise real parallel branch
-        shell: Rscript {0}
-        env:
-          RUN_subselectR_PARALLEL_TESTS: 'true'
-        run: |
-          install.packages(".", repos = NULL, type = "source")
-          library(subselectR)
-          testthat::test_file("tests/testthat/test-parallel.R", package = "subselectR")

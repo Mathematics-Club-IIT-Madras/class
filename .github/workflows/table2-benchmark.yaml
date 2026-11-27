@@ -1,15 +1,28 @@
-name: IBOSS Benchmark Table
+name: Table Benchmarking
 
 on:
   workflow_dispatch:
     inputs:
+      table:
+        description: 'Table to run (Table 4 full mode needs substantial RAM)'
+        type: choice
+        default: '2'
+        options: ['2', '3', '4', '5', '6']
+      smoke:
+        description: 'Small validation run for Tables 3-6 (not publication results)'
+        type: boolean
+        default: false
+      runner:
+        description: 'Runner: use a suitable high-memory runner label for full Table 4'
+        type: string
+        default: 'ubuntu-latest'
       n_sizes:
-        description: 'Comma-separated sample sizes n (default: 5000,50000,500000)'
+        description: 'Table 2 only: comma-separated sample sizes n'
         required: false
         default: '5000,50000,500000'
         type: string
       reps:
-        description: 'Number of replications per n'
+        description: 'Replications per scenario (1 for trial runs; increase for research)'
         required: false
         default: '1'
         type: string
@@ -21,15 +34,15 @@ on:
       n_sample:
         description: 'CLASS subsample size (nSample)'
         required: false
-        default: '1000'
+        default: ''
         type: string
       n_times:
         description: 'CLASS LASSO repetitions (nTimes)'
         required: false
-        default: '100'
+        default: ''
         type: string
       k:
-        description: 'Selected subdata size (k)'
+        description: 'Table 2 only: selected subdata size (k)'
         required: false
         default: '1000'
         type: string
@@ -39,13 +52,9 @@ permissions:
 
 jobs:
   benchmark:
-    name: Benchmark (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 180
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    name: Table ${{ inputs.table }} benchmark
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 360
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       TABLE2_N_SIZES: ${{ inputs.n_sizes || '5000,50000,500000' }}
@@ -57,6 +66,18 @@ jobs:
       TABLE2_REPS: ${{ inputs.reps || '1' }}
       TABLE2_CORES: ${{ inputs.cores || '1' }}
       TABLE2_OUT_DIR: 'benchmark-results'
+      BENCHMARK_TABLE: ${{ inputs.table }}
+      BENCHMARK_SMOKE: ${{ inputs.smoke }}
+      BENCHMARK_REPS: ${{ inputs.reps }}
+      BENCHMARK_CORES: ${{ inputs.cores }}
+      BENCHMARK_N_SAMPLE: ${{ inputs.n_sample }}
+      BENCHMARK_N_TIMES: ${{ inputs.n_times }}
+      BENCHMARK_OUT_DIR: 'benchmark-results'
+      OMP_NUM_THREADS: ${{ inputs.cores }}
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
+      BLIS_NUM_THREADS: '1'
     steps:
       - uses: actions/checkout@v6
 
@@ -73,15 +94,35 @@ jobs:
         shell: Rscript {0}
         run: install.packages(".", repos = NULL, type = "source")
 
-      - name: Run Table 2 timing benchmark
+      - name: Validate benchmark helpers
         shell: Rscript {0}
-        run: source("tests/performance/table2-class-benchmark.R")
+        run: source("tests/performance/test-table-benchmark.R")
+
+      - name: Exercise real parallel branch
+        shell: Rscript {0}
+        env:
+          RUN_subselectR_PARALLEL_TESTS: 'true'
+        run: |
+          library(subselectR)
+          testthat::test_file("tests/testthat/test-parallel.R", package = "subselectR", stop_on_failure = TRUE)
+
+      - name: Run selected table
+        shell: Rscript {0}
+        run: |
+          table <- Sys.getenv("BENCHMARK_TABLE")
+          stopifnot(table %in% as.character(2:6))
+          if (table == "2" && Sys.getenv("BENCHMARK_SMOKE") == "true")
+            stop("Table 2 uses its existing n_sizes/k controls; smoke mode is for Tables 3-6.")
+          for (key in c("BENCHMARK_N_SAMPLE", "BENCHMARK_N_TIMES")) {
+            if (!nzchar(Sys.getenv(key))) Sys.unsetenv(key)
+          }
+          source(sprintf("tests/performance/table%s-class-benchmark.R", table))
 
       - name: Upload benchmark results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: table2-benchmark-${{ matrix.os }}
+          name: table${{ inputs.table }}-benchmark-${{ runner.os }}-${{ github.run_attempt }}
           path: benchmark-results/
           if-no-files-found: warn
 

@@ -172,8 +172,7 @@ SRHT: J. A. Tropp, "Improved analysis of the subsampled randomized Hadamard tran
 ## Table benchmarks
 
 The manually triggered **Table Benchmarking** GitHub workflow supports Tables
-2–6. Tables 3–6 include small smoke runs and save raw results, summary tables,
-and run settings. See [benchmark instructions](tests/performance/README.md)
+2–6 from the paper: https://doi.org/10.1080/01621459.2017.1408468. See [benchmark instructions](tests/performance/README.md)
 for table configurations, metric definitions, and local commands.
 
 ## Acknowledgements
